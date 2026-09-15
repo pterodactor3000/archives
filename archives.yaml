@@ -1,0 +1,61 @@
+# Learning vault configuration
+# Owned copies only — subtract before add; never delete source originals.
+
+vault:
+  root: .
+  materials:
+    - notes
+    - cheatsheets
+    - courses
+    - drills
+  staging: ingest
+
+sources:
+  # Active git sources (cloned/copied into ingest/, then owned into materials/)
+  - name: learning
+    type: git
+    url: https://github.com/pterodactor3000/learning
+    enabled: true
+    dest: ingest/learning
+
+  - name: remote-learning
+    type: git
+    url: https://github.com/pterodactor3000/remote-learning
+    enabled: true
+    dest: ingest/remote-learning
+
+  - name: stack-notes
+    type: git
+    url: https://github.com/pterodactor3000/stack-notes
+    enabled: true
+    dest: ingest/stack-notes
+
+  # Deferred — enable when ready; ingest skips these until enabled: true
+  - name: node-sql-refresher
+    type: cursor-codebase
+    id: pterodactor/node-sql-refresher
+    enabled: false
+    note: "cursor.com codebase — manual / deferred"
+
+  - name: agent-atlas
+    type: cursor-codebase
+    id: pterodactor/agent-atlas
+    enabled: false
+    note: "cursor.com codebase — manual / deferred"
+
+  - name: empty-window-canvases
+    type: local
+    path: /home/pterodactorius/.cursor/projects/empty-window/canvases/
+    enabled: false
+    note: "deferred local path — enable when available on this machine"
+
+ingest:
+  dry_run_default: false
+  # subtract-before-add: remove vault-owned paths that no longer exist in source
+  # before copying new/updated files. Never touch the source repos themselves.
+  subtract_before_add: true
+  state_file: .archives/last_ingest.json
+
+organize:
+  # Light normalize only: ensure dirs, strip trailing whitespace on .md, etc.
+  normalize_markdown: true
