@@ -55,7 +55,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser(
         "index",
-        help="Regenerate root INDEX.md catalog of all vault material files",
+        help="Regenerate entry-level INDEX.md + hostable docs/ pages",
     )
 
     return p
