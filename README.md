@@ -4,10 +4,14 @@ Local **learning vault** for programming / software-engineering study materials.
 
 Owned copies only. No clever sync magic. Subtract before add. Source repos are never deleted.
 
+**Catalog:** see **[INDEX.md](INDEX.md)** (entry-level: each repo + each canvas) or the hostable front page **[docs/index.html](docs/index.html)**.
+
 ## Layout
 
 ```
 README.md
+INDEX.md               # entry-level catalog: repos + canvases (regenerate: archives index)
+docs/                  # hostable static site (GitHub Pages from /docs)
 archives.yaml          # sources + vault policy
 bin/archives           # single CLI entrypoint
 archives_lib/          # small Python package behind the CLI
@@ -28,6 +32,7 @@ ingest/                # staging clones from sources (gitignored contents)
 ./bin/archives ingest --dry-run
 ./bin/archives ingest
 ./bin/archives organize
+./bin/archives index      # regenerate INDEX.md after ingest
 ```
 
 Requires Python 3.10+ and `PyYAML` (`pip install pyyaml`). Git + `gh` for HTTPS clones when ingesting remote sources.
@@ -40,6 +45,7 @@ Requires Python 3.10+ and `PyYAML` (`pip install pyyaml`). Git + `gh` for HTTPS 
 | `archives ingest [--dry-run]` | Clone/update enabled git sources into `ingest/`, then **promote** owned copies into `{material}/{source_name}/`. Deferred sources stay skipped. |
 | `archives organize [--dry-run]` | Light normalize (e.g. trailing whitespace on `.md`) under material dirs |
 | `archives status` | Config validity, file counts (incl. per-source material subdirs), enabled/deferred sources, last ingest state |
+| `archives index` | Regenerate entry-level [`INDEX.md`](INDEX.md) + hostable [`docs/`](docs/index.html) (repos + canvases) |
 
 Always:
 
@@ -76,6 +82,31 @@ Local canvases path (on cogitator): `/home/pterodactorius/.cursor/projects/empty
 3. Upstream source repos are never deleted or modified.
 
 `--dry-run` covers both stage and promote (no writes, no state file).
+
+
+## Host remotely (static / GitHub Pages)
+
+The vault front page lives under `docs/` so you can browse entries without Cursor.
+
+1. Push this repo (or merge to `main`).
+2. GitHub → **Settings → Pages** → Deploy from branch **`main`** / folder **`/docs`**.
+3. Open the Pages URL; `docs/index.html` is the front page. Entry cards use relative links under `docs/entries/`.
+
+**Note:** private-repo GitHub Pages often needs GitHub Pro (or a public repo). Alternatives:
+
+```bash
+# from vault root — serve only the static site
+python3 -m http.server -d docs 8765
+# then open http://localhost:8765/
+```
+
+Any static host that serves the `docs/` folder works the same. Do not rely on a GitHub Actions workflow here (token may lack `workflow` scope); Pages “Deploy from a branch” is enough.
+
+Regenerate after ingest:
+
+```bash
+./bin/archives index
+```
 
 ## Policy
 
