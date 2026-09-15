@@ -5,7 +5,7 @@ Not every file — regenerate with `./bin/archives index`.
 
 **3 repos** · **7 canvases** (10 entries).
 
-Hostable front page: [`docs/index.html`](docs/index.html) (GitHub Pages from `/docs`, or `python3 -m http.server -d docs`).
+Hostable front page: [`docs/index.md`](docs/index.md) (GitHub Pages from `/docs` with jekyll-theme-hacker).
 
 ## Repos
 

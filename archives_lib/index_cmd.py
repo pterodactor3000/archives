@@ -1,9 +1,7 @@
-"""index — regenerate entry-level INDEX.md + hostable docs/ pages."""
+"""index — regenerate entry-level INDEX.md + Jekyll Markdown under docs/."""
 
 from __future__ import annotations
 
-import html
-import re
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +14,16 @@ DOCS_DIR = "docs"
 CANVAS_DIR = Path("notes/empty-window-canvases")
 # Folder of canvases is listed as individual canvas entries, not one repo card.
 _CANVAS_SOURCE_NAMES = frozenset({"empty-window-canvases"})
+GITHUB_BLOB_BASE = "https://github.com/pterodactor3000/archives/blob/main"
+# Static Jekyll files kept across regenerations (not wiped).
+_DOCS_KEEP = frozenset(
+    {
+        "_config.yml",
+        "Gemfile",
+        "Gemfile.lock",
+    }
+)
+_DOCS_KEEP_DIRS = frozenset({"_layouts", "_includes", "_sass"})
 
 
 @dataclass(frozen=True)
@@ -48,6 +56,27 @@ def _md_label(text: str) -> str:
     return text.replace("[", "\\[").replace("]", "\\]")
 
 
+def _yaml_scalar(text: str) -> str:
+    """Quote a YAML double-quoted scalar safely for front matter."""
+    escaped = (
+        text.replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\n", "\\n")
+        .replace("\r", "")
+    )
+    return f'"{escaped}"'
+
+
+def _front_matter(*, layout: str, title: str, extra: dict[str, str] | None = None) -> str:
+    lines = ["---", f"layout: {layout}", f"title: {_yaml_scalar(title)}"]
+    if extra:
+        for key, value in extra.items():
+            lines.append(f"{key}: {_yaml_scalar(value)}")
+    lines.append("---")
+    lines.append("")
+    return "\n".join(lines)
+
+
 def _title_from_md(text: str, fallback: str) -> str:
     for line in text.splitlines():
         s = line.strip()
@@ -66,6 +95,10 @@ def _pick_landing(repo_dir: Path) -> Path | None:
         if p.is_file():
             return p
     return None
+
+
+def _github_blob_url(rel: str) -> str:
+    return f"{GITHUB_BLOB_BASE}/{_md_href(rel)}"
 
 
 def discover_entries(repo_root: Path) -> list[Entry]:
@@ -124,249 +157,16 @@ def discover_entries(repo_root: Path) -> list[Entry]:
     return entries
 
 
-# --- minimal markdown → HTML (no extra deps) ---------------------------------
-
-
-def _inline_md(text: str) -> str:
-    """Escape then apply a few inline patterns."""
-    s = html.escape(text)
-    # code
-    s = re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
-    # bold / italic (order matters)
-    s = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", s)
-    s = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"<em>\1</em>", s)
-    # links [text](url)
-    s = re.sub(
-        r"\[([^\]]+)\]\(([^)]+)\)",
-        r'<a href="\2">\1</a>',
-        s,
-    )
-    return s
-
-
-def md_to_html(md: str) -> str:
-    lines = md.splitlines()
-    out: list[str] = []
-    i = 0
-    in_ul = False
-    in_ol = False
-    in_p = False
-
-    def close_lists() -> None:
-        nonlocal in_ul, in_ol
-        if in_ul:
-            out.append("</ul>")
-            in_ul = False
-        if in_ol:
-            out.append("</ol>")
-            in_ol = False
-
-    def close_p() -> None:
-        nonlocal in_p
-        if in_p:
-            out.append("</p>")
-            in_p = False
-
-    while i < len(lines):
-        line = lines[i]
-        # fenced code
-        if line.strip().startswith("```"):
-            close_p()
-            close_lists()
-            lang = line.strip()[3:].strip()
-            i += 1
-            code_lines: list[str] = []
-            while i < len(lines) and not lines[i].strip().startswith("```"):
-                code_lines.append(lines[i])
-                i += 1
-            if i < len(lines):
-                i += 1
-            cls = f' class="language-{html.escape(lang)}"' if lang else ""
-            out.append(f"<pre><code{cls}>{html.escape(chr(10).join(code_lines))}</code></pre>")
-            continue
-
-        stripped = line.strip()
-        if not stripped:
-            close_p()
-            close_lists()
-            i += 1
-            continue
-
-        heading = re.match(r"^(#{1,6})\s+(.*)$", stripped)
-        if heading:
-            close_p()
-            close_lists()
-            level = len(heading.group(1))
-            out.append(f"<h{level}>{_inline_md(heading.group(2))}</h{level}>")
-            i += 1
-            continue
-
-        if re.match(r"^[-*]\s+", stripped):
-            close_p()
-            if in_ol:
-                out.append("</ol>")
-                in_ol = False
-            if not in_ul:
-                out.append("<ul>")
-                in_ul = True
-            item = re.sub(r"^[-*]\s+", "", stripped)
-            out.append(f"<li>{_inline_md(item)}</li>")
-            i += 1
-            continue
-
-        if re.match(r"^\d+\.\s+", stripped):
-            close_p()
-            if in_ul:
-                out.append("</ul>")
-                in_ul = False
-            if not in_ol:
-                out.append("<ol>")
-                in_ol = True
-            item = re.sub(r"^\d+\.\s+", "", stripped)
-            out.append(f"<li>{_inline_md(item)}</li>")
-            i += 1
-            continue
-
-        if stripped.startswith("> "):
-            close_p()
-            close_lists()
-            out.append(f"<blockquote><p>{_inline_md(stripped[2:])}</p></blockquote>")
-            i += 1
-            continue
-
-        if re.match(r"^---+$", stripped) or re.match(r"^\*\*\*+$", stripped):
-            close_p()
-            close_lists()
-            out.append("<hr>")
-            i += 1
-            continue
-
-        close_lists()
-        if not in_p:
-            out.append("<p>")
-            in_p = True
-            out.append(_inline_md(stripped))
-        else:
-            out.append(" " + _inline_md(stripped))
-        i += 1
-
-    close_p()
-    close_lists()
-    return "\n".join(out)
-
-
-# --- HTML chrome -------------------------------------------------------------
-
-_CSS = """\
-:root {
-  --bg: #0f1419;
-  --panel: #1a2332;
-  --text: #e7ecf3;
-  --muted: #8b9bb4;
-  --accent: #6cb6ff;
-  --border: #2a3548;
-  --chip-repo: #3d5a40;
-  --chip-canvas: #4a3d5a;
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.55;
-}
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
-.wrap { max-width: 920px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
-header h1 { margin: 0 0 0.35rem; font-size: 1.75rem; }
-header p { margin: 0; color: var(--muted); }
-.meta { margin-top: 0.75rem; color: var(--muted); font-size: 0.9rem; }
-.grid {
-  display: grid;
-  gap: 0.85rem;
-  margin-top: 1.75rem;
-}
-.card {
-  display: block;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1rem 1.15rem;
-  color: inherit;
-  transition: border-color 0.15s;
-}
-.card:hover { border-color: var(--accent); text-decoration: none; }
-.card h2 { margin: 0 0 0.35rem; font-size: 1.1rem; }
-.card .path { color: var(--muted); font-size: 0.85rem; font-family: ui-monospace, monospace; }
-.chip {
-  display: inline-block;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.15rem 0.45rem;
-  border-radius: 999px;
-  margin-bottom: 0.45rem;
-  color: #fff;
-}
-.chip.repo { background: var(--chip-repo); }
-.chip.canvas { background: var(--chip-canvas); }
-.section-title {
-  margin: 2rem 0 0.75rem;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-}
-nav.crumb { margin-bottom: 1.25rem; font-size: 0.9rem; color: var(--muted); }
-article {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1.25rem 1.4rem;
-}
-article h1:first-child { margin-top: 0; }
-article pre {
-  background: #0b1017;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.85rem 1rem;
-  overflow-x: auto;
-}
-article code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.9em;
-}
-article :not(pre) > code {
-  background: #0b1017;
-  padding: 0.1em 0.35em;
-  border-radius: 4px;
-}
-.stub dl { margin: 1rem 0; }
-.stub dt { color: var(--muted); font-size: 0.8rem; margin-top: 0.75rem; }
-.stub dd { margin: 0.2rem 0 0; font-family: ui-monospace, monospace; font-size: 0.9rem; }
-.note {
-  margin-top: 1.25rem;
-  padding: 0.85rem 1rem;
-  background: #0b1017;
-  border-left: 3px solid var(--accent);
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-.links { margin-top: 1.25rem; }
-.links li { margin: 0.35rem 0; }
-"""
-
-
 def _repo_entry_href(name: str) -> str:
-    return f"entries/repos/{name}.html"
+    return f"entries/repos/{name}.md"
 
 
 def _canvas_entry_href(name: str) -> str:
-    return f"entries/canvases/{name}.html"
+    return f"entries/canvases/{name}.md"
 
 
 def build_index_markdown(entries: list[Entry]) -> str:
+    """Root INDEX.md for GitHub browsing (entry-level catalog)."""
     repos = [e for e in entries if isinstance(e, RepoEntry)]
     canvases = [e for e in entries if isinstance(e, CanvasEntry)]
     lines: list[str] = [
@@ -377,8 +177,8 @@ def build_index_markdown(entries: list[Entry]) -> str:
         "",
         f"**{len(repos)} repos** · **{len(canvases)} canvases** ({len(entries)} entries).",
         "",
-        "Hostable front page: [`docs/index.html`](docs/index.html) "
-        "(GitHub Pages from `/docs`, or `python3 -m http.server -d docs`).",
+        "Hostable front page: [`docs/index.md`](docs/index.md) "
+        "(GitHub Pages from `/docs` with jekyll-theme-hacker).",
         "",
         "## Repos",
         "",
@@ -396,6 +196,7 @@ def build_index_markdown(entries: list[Entry]) -> str:
 
     lines.append("## Canvases")
     lines.append("")
+
     if not canvases:
         lines.append("_None yet._")
         lines.append("")
@@ -413,185 +214,146 @@ def build_index_markdown(entries: list[Entry]) -> str:
     return text
 
 
-def build_front_page(entries: list[Entry]) -> str:
+def build_docs_index_md(entries: list[Entry]) -> str:
+    """Jekyll docs/index.md — site-relative entry links (works with baseurl)."""
     repos = [e for e in entries if isinstance(e, RepoEntry)]
     canvases = [e for e in entries if isinstance(e, CanvasEntry)]
     parts: list[str] = [
-        f'<p class="meta">{len(repos)} repos · {len(canvases)} canvases · '
-        f"regenerate with <code>./bin/archives index</code></p>",
-        '<p class="section-title">Repos</p>',
-        '<div class="grid">',
+        _front_matter(layout="default", title="archives"),
+        "Owned learning materials — entry-level links to each ingested **repo** and each **canvas**.",
+        "",
+        f"**{len(repos)} repos** · **{len(canvases)} canvases** · regenerate with `./bin/archives index`",
+        "",
+        "## Repos",
+        "",
     ]
-    for e in repos:
-        href = _repo_entry_href(e.name)
-        parts.append(
-            f'<a class="card" href="{html.escape(href)}">'
-            f'<span class="chip repo">repo</span>'
-            f"<h2>{html.escape(e.title)}</h2>"
-            f'<div class="path">{html.escape(e.vault_path)}</div>'
-            f"</a>"
-        )
     if not repos:
-        parts.append("<p class=\"meta\">No repos yet.</p>")
-    parts.append("</div>")
-    parts.append('<p class="section-title">Canvases</p>')
-    parts.append('<div class="grid">')
-    for e in canvases:
-        href = _canvas_entry_href(e.name)
-        parts.append(
-            f'<a class="card" href="{html.escape(href)}">'
-            f'<span class="chip canvas">canvas</span>'
-            f"<h2>{html.escape(e.title)}</h2>"
-            f'<div class="path">{html.escape(e.vault_path)}</div>'
-            f"</a>"
-        )
+        parts.append("_None yet._")
+        parts.append("")
+    else:
+        for e in repos:
+            href = _repo_entry_href(e.name)
+            parts.append(
+                f"- **[{_md_label(e.title)}]({href})** — `{e.vault_path}`"
+            )
+        parts.append("")
+
+    parts.append("## Canvases")
+    parts.append("")
     if not canvases:
-        parts.append("<p class=\"meta\">No canvases yet.</p>")
-    parts.append("</div>")
+        parts.append("_None yet._")
+        parts.append("")
+    else:
+        for e in canvases:
+            href = _canvas_entry_href(e.name)
+            parts.append(
+                f"- **[{_md_label(e.title)}]({href})** — `{e.vault_path}`"
+            )
+        parts.append("")
 
-    body = "\n".join(parts)
-    # front page uses a custom header already inside page(); override via full assemble
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>archives vault</title>
-<link rel="stylesheet" href="assets/style.css">
-</head>
-<body>
-<main class="wrap">
-<header>
-<h1>archives vault</h1>
-<p>Owned learning materials — repos and canvases.</p>
-</header>
-{body}
-</main>
-</body>
-</html>
-"""
+    text = "\n".join(parts)
+    if not text.endswith("\n"):
+        text += "\n"
+    return text
 
 
-def build_repo_page(repo_root: Path, entry: RepoEntry) -> str:
+def build_repo_page_md(repo_root: Path, entry: RepoEntry) -> str:
+    """Self-contained README body under docs (no reliance on unpublished ../courses)."""
     landing = repo_root / entry.landing
-    md = landing.read_text(encoding="utf-8", errors="replace")
-    rendered = md_to_html(md)
-    src_line = ""
-    if entry.source_url:
-        src_line = (
-            f'<p class="meta">Upstream: '
-            f'<a href="{html.escape(entry.source_url)}">{html.escape(entry.source_url)}</a>'
-            f"</p>"
-        )
-    body = f"""
-<p class="meta">Vault path: <code>{html.escape(entry.vault_path)}</code> ·
-landing: <code>{html.escape(entry.landing)}</code></p>
-{src_line}
-<article>
-{rendered}
-</article>
-<p class="meta" style="margin-top:1.5rem">
-<a href="../../{_md_href(entry.landing)}">Open {html.escape(entry.landing.split('/')[-1])} in repo</a>
-(relative; works when browsing the tree / serving from repo root)
-</p>
-"""
-    crumb = '<a href="../../index.html">← vault</a>'
-    # Fix: page() wraps another h1 — embed title in article only via custom
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{html.escape(entry.title)}</title>
-<link rel="stylesheet" href="../../assets/style.css">
-</head>
-<body>
-<main class="wrap">
-<nav class="crumb">{crumb}</nav>
-<header>
-<h1>{html.escape(entry.title)}</h1>
-<p>Ingested repo · <code>{html.escape(entry.vault_path)}</code></p>
-</header>
-{body}
-</main>
-</body>
-</html>
-"""
+    body = landing.read_text(encoding="utf-8", errors="replace")
+    if not body.endswith("\n"):
+        body += "\n"
 
-
-def build_canvas_page(entry: CanvasEntry) -> str:
-    # From docs/entries/canvases/X.html → repo root is ../../..
-    rel_tsx = f"../../../{entry.vault_path}"
-    links = [
-        f'<li><a href="{html.escape(rel_tsx)}"><code>{html.escape(entry.vault_path)}</code></a> (Cursor canvas source)</li>'
+    lines: list[str] = [
+        _front_matter(layout="page", title=entry.title).rstrip("\n"),
+        "",
+        f"**Vault path:** `{entry.vault_path}` · **landing:** `{entry.landing}`",
+        "",
     ]
-    data_block = ""
+    if entry.source_url:
+        lines.append(f"**Upstream:** [{entry.source_url}]({entry.source_url})")
+        lines.append("")
+    lines.append("---")
+    lines.append("")
+    return "\n".join(lines) + "\n" + body
+
+
+def build_canvas_page_md(entry: CanvasEntry) -> str:
+    """Stub page with GitHub blob links (paths outside /docs are not published)."""
+    lines: list[str] = [
+        _front_matter(layout="page", title=entry.title).rstrip("\n"),
+        "",
+        f"**Canvas** · `{entry.vault_path}`",
+        "",
+        "`.canvas.tsx` is Cursor canvas source — open it in Cursor to view/edit.",
+        "This page is a stub for remote browsing of the vault catalog.",
+        "Source files live outside `/docs`, so GitHub Pages does not publish them;",
+        "use the blob links below.",
+        "",
+        f"- Source: [`{entry.vault_path}`]({_github_blob_url(entry.vault_path)})",
+    ]
     if entry.data_json:
-        rel_data = f"../../../{entry.data_json}"
-        links.append(
-            f'<li><a href="{html.escape(rel_data)}"><code>{html.escape(entry.data_json)}</code></a></li>'
+        lines.append(
+            f"- Data: [`{entry.data_json}`]({_github_blob_url(entry.data_json)})"
         )
-        data_block = f"<dt>Data</dt><dd>{html.escape(entry.data_json)}</dd>"
-
-    body = f"""
-<div class="stub">
-<dl>
-<dt>Title</dt><dd>{html.escape(entry.title)}</dd>
-<dt>Path</dt><dd>{html.escape(entry.vault_path)}</dd>
-{data_block}
-</dl>
-<div class="note">
-<code>.canvas.tsx</code> is Cursor canvas source — open it in Cursor to view/edit the canvas.
-This static page is a stub for remote browsing of the vault catalog.
-</div>
-<ul class="links">
-{chr(10).join(links)}
-</ul>
-</div>
-"""
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{html.escape(entry.title)}</title>
-<link rel="stylesheet" href="../../assets/style.css">
-</head>
-<body>
-<main class="wrap">
-<nav class="crumb"><a href="../../index.html">← vault</a></nav>
-<header>
-<h1>{html.escape(entry.title)}</h1>
-<p>Canvas · <code>{html.escape(entry.vault_path)}</code></p>
-</header>
-{body}
-</main>
-</body>
-</html>
-"""
+    lines.append("")
+    lines.append("[← vault index](../../index.md)")
+    lines.append("")
+    return "\n".join(lines)
 
 
-def _reset_generated_docs(docs: Path) -> None:
-    """Idempotent: replace generated site tree under docs/."""
-    if docs.exists():
-        shutil.rmtree(docs)
-    (docs / "assets").mkdir(parents=True)
-    (docs / "entries" / "repos").mkdir(parents=True)
-    (docs / "entries" / "canvases").mkdir(parents=True)
+def _clear_generated_docs(docs: Path) -> None:
+    """Remove prior generated pages/assets; keep Jekyll config and layouts."""
+    docs.mkdir(parents=True, exist_ok=True)
+
+    # Drop obsolete custom theme CSS / HTML leftovers.
+    assets = docs / "assets"
+    if assets.is_dir():
+        for p in assets.rglob("*"):
+            if p.is_file():
+                p.unlink()
+        # remove empty dirs bottom-up
+        for p in sorted(assets.rglob("*"), reverse=True):
+            if p.is_dir():
+                try:
+                    p.rmdir()
+                except OSError:
+                    pass
+        try:
+            assets.rmdir()
+        except OSError:
+            pass
+
+    for path in docs.iterdir():
+        if path.name in _DOCS_KEEP or path.name in _DOCS_KEEP_DIRS:
+            continue
+        if path.name == "entries" and path.is_dir():
+            # wipe entries tree; recreate below
+            shutil.rmtree(path)
+            continue
+        if path.is_file() and path.suffix in {".html", ".md", ".css"}:
+            # generated index or stray pages
+            if path.name.startswith("_"):
+                continue
+            path.unlink()
+        elif path.is_file() and path.name == "index.html":
+            path.unlink()
+
+    (docs / "entries" / "repos").mkdir(parents=True, exist_ok=True)
+    (docs / "entries" / "canvases").mkdir(parents=True, exist_ok=True)
 
 
 def write_docs(repo_root: Path, entries: list[Entry]) -> None:
     docs = repo_root / DOCS_DIR
-    _reset_generated_docs(docs)
-    (docs / "assets" / "style.css").write_text(_CSS, encoding="utf-8")
-    (docs / "index.html").write_text(build_front_page(entries), encoding="utf-8")
+    _clear_generated_docs(docs)
+    (docs / "index.md").write_text(build_docs_index_md(entries), encoding="utf-8")
     for e in entries:
         if isinstance(e, RepoEntry):
-            path = docs / "entries" / "repos" / f"{e.name}.html"
-            path.write_text(build_repo_page(repo_root, e), encoding="utf-8")
+            path = docs / "entries" / "repos" / f"{e.name}.md"
+            path.write_text(build_repo_page_md(repo_root, e), encoding="utf-8")
         else:
-            path = docs / "entries" / "canvases" / f"{e.name}.html"
-            path.write_text(build_canvas_page(e), encoding="utf-8")
+            path = docs / "entries" / "canvases" / f"{e.name}.md"
+            path.write_text(build_canvas_page_md(e), encoding="utf-8")
 
 
 def run_index(repo_root: Path) -> int:
