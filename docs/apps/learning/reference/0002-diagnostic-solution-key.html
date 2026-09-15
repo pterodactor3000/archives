@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Interview-quality solutions for the first Angular, TypeScript, and algorithms diagnostic"
+    >
+    <title>Diagnostic solution key</title>
+    <link rel="stylesheet" href="../assets/course.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">Printable reference 0002</p>
+        <h1>Diagnostic solution key</h1>
+        <p>
+          These are compact interview-quality solutions. Rebuild each one from
+          memory after reading it. Recognition is not retrieval.
+        </p>
+        <nav aria-label="Reference navigation">
+          <a href="../lessons/0001-adaptive-interview-diagnostic.html"
+            >Diagnostic</a
+          >
+          <a href="../lessons/0003-rebuild-quote-card.html"
+            >Quote-card repair lesson</a
+          >
+          <a href="../MISSION.md">Mission</a>
+        </nav>
+      </header>
+
+      <section>
+        <h2>1. TypeScript: validate, model, exhaust</h2>
+        <p>
+          External data starts as <code>unknown</code>. Runtime checks create a
+          trusted <code>Trade</code>. A switch over its discriminant then proves
+          exhaustive formatting.
+        </p>
+        <pre><code>interface EquityTrade {
+  readonly kind: 'equity';
+  readonly symbol: string;
+  readonly quantity: number;
+}
+
+interface BondTrade {
+  readonly kind: 'bond';
+  readonly isin: string;
+  readonly faceValue: number;
+}
+
+type Trade = EquityTrade | BondTrade;
+
+function isRecord(value: unknown): value is Record&lt;string, unknown> {
+  return typeof value === 'object' &amp;&amp; value !== null;
+}
+
+function parseTrade(payload: unknown): Trade | null {
+  if (!isRecord(payload)) {
+    return null;
+  }
+
+  if (
+    payload.kind === 'equity' &amp;&amp;
+    typeof payload.symbol === 'string' &amp;&amp;
+    typeof payload.quantity === 'number' &amp;&amp;
+    Number.isFinite(payload.quantity)
+  ) {
+    return {
+      kind: 'equity',
+      symbol: payload.symbol,
+      quantity: payload.quantity,
+    };
+  }
+
+  if (
+    payload.kind === 'bond' &amp;&amp;
+    typeof payload.isin === 'string' &amp;&amp;
+    typeof payload.faceValue === 'number' &amp;&amp;
+    Number.isFinite(payload.faceValue)
+  ) {
+    return {
+      kind: 'bond',
+      isin: payload.isin,
+      faceValue: payload.faceValue,
+    };
+  }
+
+  return null;
+}
+
+function assertNever(value: never): never {
+  throw new Error(`Unhandled trade variant: ${String(value)}`);
+}
+
+function formatTrade(trade: Trade): string {
+  switch (trade.kind) {
+    case 'equity':
+      return `${trade.symbol}: ${trade.quantity}`;
+    case 'bond':
+      return `${trade.isin}: ${trade.faceValue}`;
+    default:
+      return assertNever(trade);
+  }
+}
+
+function describeTrade(payload: unknown): string {
+  const trade = parseTrade(payload);
+  return trade === null ? 'Invalid trade payload' : formatTrade(trade);
+}</code></pre>
+        <div class="callout">
+          <h3>Why this earns 3/3</h3>
+          <p>
+            It uses no <code>any</code> or unchecked assertion. It checks every
+            variant-specific field, returns useful invalid-data behavior, builds
+            a clean discriminated union, and makes an added variant fail the
+            exhaustive check at compile time.
+          </p>
+        </div>
+        <p class="small">
+          Source:
+          <a
+            href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking"
+            >TypeScript narrowing and exhaustiveness checking</a
+          >.
+        </p>
+      </section>
+
+      <section>
+        <h2>2. Angular: class, signals, derived state</h2>
+        <p>
+          This current-style solution uses signal inputs and outputs. The
+          explicit <code>standalone: true</code> keeps the answer clear when the
+          interview version is unknown. Current Angular components are
+          standalone by default.
+        </p>
+        <pre><code>import { Component, computed, input, output } from '@angular/core';
+
+interface Quote {
+  readonly symbol: string;
+  readonly bid: number;
+  readonly ask: number;
+}
+
+@Component({
+  selector: 'app-quote-card',
+  standalone: true,
+  template: `
+    &lt;button type="button" (click)="selectQuote()">
+      &lt;strong>{{ quote().symbol }}&lt;/strong>
+      &lt;span>Bid: {{ quote().bid }}&lt;/span>
+      &lt;span>Ask: {{ quote().ask }}&lt;/span>
+      &lt;span>Spread: {{ spread() }}&lt;/span>
+    &lt;/button>
+  `,
+})
+export class QuoteCard {
+  readonly quote = input.required&lt;Quote>();
+  readonly selected = output&lt;string>();
+  readonly spread = computed(() => this.quote().ask - this.quote().bid);
+
+  selectQuote(): void {
+    this.selected.emit(this.quote().symbol);
+  }
+}</code></pre>
+        <p>Parent usage:</p>
+        <pre><code>&lt;app-quote-card
+  [quote]="currentQuote"
+  (selected)="openTrade($event)"
+/></code></pre>
+        <details>
+          <summary>Angular 16 equivalent</summary>
+          <pre><code>import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
+
+@Component({
+  selector: 'app-quote-card',
+  standalone: true,
+  template: `
+    &lt;button type="button" (click)="selectQuote()">
+      &lt;strong>{{ quote.symbol }}&lt;/strong>
+      &lt;span>Bid: {{ quote.bid }}&lt;/span>
+      &lt;span>Ask: {{ quote.ask }}&lt;/span>
+      &lt;span>Spread: {{ spread }}&lt;/span>
+    &lt;/button>
+  `,
+})
+export class QuoteCard {
+  @Input({ required: true }) readonly quote!: Quote;
+  @Output() readonly selected = new EventEmitter&lt;string>();
+
+  get spread(): number {
+    return this.quote.ask - this.quote.bid;
+  }
+
+  selectQuote(): void {
+    this.selected.emit(this.quote.symbol);
+  }
+}</code></pre>
+        </details>
+        <div class="callout">
+          <h3>Why this earns 3/3</h3>
+          <p>
+            It has a valid exported component class, exact imports, a required
+            typed input, a typed output, immutable fields, derived state, and
+            working interpolation and event bindings.
+          </p>
+        </div>
+        <p class="small">
+          Sources:
+          <a href="https://angular.dev/guide/components/inputs"
+            >Angular inputs</a
+          >,
+          <a href="https://angular.dev/guide/components/outputs"
+            >Angular outputs</a
+          >, and
+          <a href="https://angular.dev/guide/signals">Angular signals</a>.
+        </p>
+      </section>
+
+      <section>
+        <h2>3. Two Sum: remember prior values</h2>
+        <p>
+          Invariant before each iteration: the map contains each value from an
+          earlier index, and no valid pair has been found entirely within those
+          earlier indices.
+        </p>
+        <pre><code>function twoSum(nums: number[], target: number): number[] {
+  const indexByValue = new Map&lt;number, number>();
+
+  for (let index = 0; index &lt; nums.length; index += 1) {
+    const value = nums[index];
+    const complement = target - value;
+    const complementIndex = indexByValue.get(complement);
+
+    if (complementIndex !== undefined) {
+      return [complementIndex, index];
+    }
+
+    indexByValue.set(value, index);
+  }
+
+  throw new Error(`No two-sum solution for target ${target}`);
+}</code></pre>
+        <p>
+          Store the current value only after checking its complement. That
+          prevents one element from pairing with itself and still handles
+          duplicates.
+        </p>
+        <pre><code>twoSum([2, 7, 11, 15], 9);  // [0, 1]
+twoSum([3, 3], 6);          // [0, 1]
+twoSum([0, 4, 3, 0], 0);   // [0, 3]
+twoSum([-3, 4, 3, 90], 0); // [0, 2]</code></pre>
+        <div class="callout">
+          <h3>Why this earns 3/3</h3>
+          <p>
+            It returns indices, handles zero, duplicates, and negative values,
+            and states the invariant. Each element enters and leaves the loop
+            once, so time is O(n). The map can hold n entries, so space is O(n).
+          </p>
+        </div>
+        <p class="small">
+          Sources:
+          <a href="https://leetcode.com/problems/two-sum/">LeetCode Two Sum</a>
+          and
+          <a
+            href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map"
+            >MDN Map</a
+          >.
+        </p>
+      </section>
+
+      <section>
+        <h2>How to use this key</h2>
+        <ol>
+          <li>Read one solution and explain why each line exists.</li>
+          <li>Close the key and rebuild it from a blank file.</li>
+          <li>Trace one normal case and one edge case before execution.</li>
+          <li>Run it and classify each mismatch as syntax, API, or logic.</li>
+          <li>Rebuild the failed part again after at least 30 minutes.</li>
+        </ol>
+        <p>
+          Paste your rebuilt versions to your teacher for a second score. Ask
+          follow-up questions about any line you cannot defend aloud.
+        </p>
+      </section>
+
+      <nav aria-label="Course navigation">
+        <a href="../lessons/0001-adaptive-interview-diagnostic.html"
+          >Return to diagnostic</a
+        >
+        <a href="../reference/0001-four-day-interview-roadmap.html"
+          >Open tailored roadmap</a
+        >
+        <a href="../RESOURCES.md">Open source list</a>
+      </nav>
+    </main>
+  </body>
+</html>

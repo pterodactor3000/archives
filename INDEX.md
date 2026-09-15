@@ -1,7 +1,7 @@
 # Vault index
 
 Entry-level catalog of owned vault items: each ingested **repo** and each **canvas**.
-Not every file — regenerate with `./bin/archives index`.
+Front-page destinations are **live in-browser apps** under `docs/apps/` (not README dumps). Regenerate with `./bin/archives index`.
 
 **3 repos** · **7 canvases** (10 entries).
 
@@ -9,16 +9,16 @@ Hostable front page: [`docs/index.md`](docs/index.md) (GitHub Pages from `/docs`
 
 ## Repos
 
-- **[Angular interview practice](courses/learning/README.md)** (`courses/learning`) — landing [README.md](courses/learning/README.md)
-- **[Senior frontend interview workbook](courses/remote-learning/README.md)** (`courses/remote-learning`) — landing [README.md](courses/remote-learning/README.md)
-- **[Stack notes](notes/stack-notes/README.md)** (`notes/stack-notes`) — landing [README.md](notes/stack-notes/README.md)
+- **[Angular interview practice](docs/apps/learning/)** (`courses/learning`) — live app [`docs/apps/learning/`](docs/apps/learning/)
+- **[Senior frontend interview workbook](docs/apps/remote-learning/)** (`courses/remote-learning`) — live app [`docs/apps/remote-learning/`](docs/apps/remote-learning/)
+- **[Stack notes](docs/apps/stack-notes/)** (`notes/stack-notes`) — live app [`docs/apps/stack-notes/`](docs/apps/stack-notes/)
 
 ## Canvases
 
-- **[Atos Frontend Interview Learning Map](notes/empty-window-canvases/atos-frontend-interview-learning-map.canvas.tsx)** (`notes/empty-window-canvases/atos-frontend-interview-learning-map.canvas.tsx`)
-- **[Data Structures Visual](notes/empty-window-canvases/data-structures-visual.canvas.tsx)** (`notes/empty-window-canvases/data-structures-visual.canvas.tsx`)
-- **[Frontend Dev Ladder](notes/empty-window-canvases/frontend-dev-ladder.canvas.tsx)** (`notes/empty-window-canvases/frontend-dev-ladder.canvas.tsx`)
-- **[Frontend Senior Gap Study Guide](notes/empty-window-canvases/frontend-senior-gap-study-guide.canvas.tsx)** (`notes/empty-window-canvases/frontend-senior-gap-study-guide.canvas.tsx`)
-- **[React Next Interview Guide](notes/empty-window-canvases/react-next-interview-guide.canvas.tsx)** (`notes/empty-window-canvases/react-next-interview-guide.canvas.tsx`)
-- **[Senior Frontend Interview Questions](notes/empty-window-canvases/senior-frontend-interview-questions.canvas.tsx)** (`notes/empty-window-canvases/senior-frontend-interview-questions.canvas.tsx`)
-- **[Web App Architecture](notes/empty-window-canvases/web-app-architecture.canvas.tsx)** (`notes/empty-window-canvases/web-app-architecture.canvas.tsx`)
+- **[Senior Frontend Interview Learning Map](docs/apps/canvases/atos-frontend-interview-learning-map.html)** (`notes/empty-window-canvases/atos-frontend-interview-learning-map.canvas.tsx`) — stand-in [`docs/apps/canvases/atos-frontend-interview-learning-map.html`](docs/apps/canvases/atos-frontend-interview-learning-map.html)
+- **[Advanced structures](docs/apps/canvases/data-structures-visual.html)** (`notes/empty-window-canvases/data-structures-visual.canvas.tsx`) — stand-in [`docs/apps/canvases/data-structures-visual.html`](docs/apps/canvases/data-structures-visual.html)
+- **[Frontend Developer ladder](docs/apps/canvases/frontend-dev-ladder.html)** (`notes/empty-window-canvases/frontend-dev-ladder.canvas.tsx`) — stand-in [`docs/apps/canvases/frontend-dev-ladder.html`](docs/apps/canvases/frontend-dev-ladder.html)
+- **[Frontend senior gap study guide](docs/apps/canvases/frontend-senior-gap-study-guide.html)** (`notes/empty-window-canvases/frontend-senior-gap-study-guide.canvas.tsx`) — stand-in [`docs/apps/canvases/frontend-senior-gap-study-guide.html`](docs/apps/canvases/frontend-senior-gap-study-guide.html)
+- **[React & Next.js — senior interview guide](docs/apps/canvases/react-next-interview-guide.html)** (`notes/empty-window-canvases/react-next-interview-guide.canvas.tsx`) — stand-in [`docs/apps/canvases/react-next-interview-guide.html`](docs/apps/canvases/react-next-interview-guide.html)
+- **[Senior frontend interview questions](docs/apps/canvases/senior-frontend-interview-questions.html)** (`notes/empty-window-canvases/senior-frontend-interview-questions.canvas.tsx`) — stand-in [`docs/apps/canvases/senior-frontend-interview-questions.html`](docs/apps/canvases/senior-frontend-interview-questions.html)
+- **[Web App Architecture — Learning Guide](docs/apps/canvases/web-app-architecture.html)** (`notes/empty-window-canvases/web-app-architecture.canvas.tsx`) — stand-in [`docs/apps/canvases/web-app-architecture.html`](docs/apps/canvases/web-app-architecture.html)

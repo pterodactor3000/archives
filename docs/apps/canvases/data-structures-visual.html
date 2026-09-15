@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced structures · canvas</title>
+  <style>
+    :root {
+      --bg: #0b0f14; --surface: #12181f; --border: #243041;
+      --text: #d7e0ea; --muted: #8b9aab; --accent: #5cdb95;
+      --code-bg: #0a0e13; --pink: #ff7b72;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif;
+      line-height: 1.55; padding: 1.5rem 1rem 3rem;
+    }
+    .wrap { max-width: 920px; margin: 0 auto; }
+    nav { font-size: .875rem; margin-bottom: 1.25rem; color: var(--muted); }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    header.card, section.outline, section.source {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem 1.35rem; margin-bottom: 1rem;
+    }
+    h1.page { font-size: 1.45rem; font-weight: 650; letter-spacing: -.02em; }
+    .path { margin-top: .4rem; font-size: .8rem; color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .badge {
+      display: inline-block; margin-top: .75rem; font-size: .7rem;
+      font-family: ui-monospace, Menlo, monospace; color: var(--accent);
+      border: 1px solid var(--border); border-radius: 999px; padding: .15rem .5rem;
+    }
+    .muted { color: var(--muted); font-size: .9rem; }
+    h2 { font-size: 1rem; margin-bottom: .75rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .04em; }
+    h1.extracted { font-size: 1.25rem; margin: .4rem 0 .6rem; }
+    h2.extracted { font-size: 1.05rem; margin: 1rem 0 .4rem; color: var(--text);
+      text-transform: none; letter-spacing: 0; }
+    h3.extracted { font-size: .95rem; margin: .75rem 0 .3rem; color: #c9d4e0; }
+    p.extracted { color: var(--muted); font-size: .9rem; margin: .35rem 0; }
+    pre {
+      background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 1rem; overflow: auto; max-height: 70vh; font-size: .78rem;
+      line-height: 1.45; color: #c9d1d9;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    details summary {
+      cursor: pointer; color: var(--accent); font-size: .9rem; margin-bottom: .75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a href="/archives/">← vault index</a>
+      · <a href="https://github.com/pterodactor3000/archives/blob/main/notes/empty-window-canvases/data-structures-visual.canvas.tsx">GitHub source</a>
+    </nav>
+    <header class="card">
+      <h1 class="page">Advanced structures</h1>
+      <p class="path">notes/empty-window-canvases/data-structures-visual.canvas.tsx</p>
+      <span class="badge">canvas stand-in · not Cursor runtime</span>
+      <p class="muted" style="margin-top:.85rem">
+        Static HTML stand-in for browsing on GitHub Pages. Open the
+        <code style="color:var(--pink)">.canvas.tsx</code> in Cursor for the full canvas runtime.
+      </p>
+    </header>
+    <section class="outline"><h2>Extracted structure</h2><h1 class='extracted'>Advanced structures</h1><h2 class='extracted'>Trees</h2><h2 class='extracted'>Graphs</h2><h2 class='extracted'>Linked lists</h2><h2 class='extracted'>Queues</h2><h3 class='extracted'>Complexity cheat</h3><h3 class='extracted'>Edge kinds</h3><p class='extracted'>Trees, graphs, linked lists, queues — shapes, traversal, and when they show up in React / Next work.</p><p class='extracted'>Hierarchical nodes (DOM, React fiber conceptually, file systems, UI menus). DFS/BFS traversal; balanced trees for ordered maps.</p><p class='extracted'>DFS walks deep before siblings (recursion or an explicit stack); BFS walks level by level with a queue — useful for “nearest parent” and breadth-limited UI expands.</p><p class='extracted'>When: nested comments, org charts, virtualized file browsers. Prefer adjacency lists from APIs over deep recursive props without memo boundaries. Flat `id → children[]` maps keep React reconciliation cheap and make virtualization straightforward.</p><p class='extracted'>Visit all nodes: O(n). Search in unbalanced tree: O(n) worst. Balanced BST / ordered map: O(log n) lookup.</p><p class='extracted'>DFS order: root → A → A1 → A2 → B → B1</p><p class='extracted'>BFS order: root → A → B → A1 → A2 → B1</p><p class='extracted'>Nodes + edges (directed/undirected). Used for dependency graphs, social links, routing, monorepo project graphs.</p><p class='extracted'>A tree is a special acyclic connected graph with one parent per child; general graphs allow multiple parents, shared deps, and cycles.</p><p class='extracted'>When: permissions inheritance, recommendation edges, build pipelines. Watch cycles; memoize expensive traversals. Detect cycles with DFS color states or Kahn’s algorithm before topo-sort (Turborepo / Nx style task graphs).</p><p class='extracted'>Directed: A→B (depends-on). Undirected: A—B (friendship). Weighted: cost/latency on the edge for routing.</p><p class='extracted'>Solid = forward deps. Dashed = back-edge (cycle) — topo-sort fails until broken.</p></section>
+    <section class="source">
+      <details open>
+        <summary>Source (.canvas.tsx)</summary>
+        <pre>import {
+  Card,
+  CardBody,
+  CardHeader,
+  Code,
+  Divider,
+  Grid,
+  H1,
+  H2,
+  H3,
+  Pill,
+  Row,
+  Stack,
+  Text,
+  computeDAGLayout,
+  useHostTheme,
+} from &quot;cursor/canvas&quot;;
+
+export default function DataStructuresVisual() {
+  return (
+    &lt;Stack gap={28} style={{ padding: 20, maxWidth: 960 }}&gt;
+      &lt;Stack gap={6}&gt;
+        &lt;H1&gt;Advanced structures&lt;/H1&gt;
+        &lt;Text tone=&quot;secondary&quot;&gt;
+          Trees, graphs, linked lists, queues — shapes, traversal, and when they
+          show up in React / Next work.
+        &lt;/Text&gt;
+      &lt;/Stack&gt;
+
+      &lt;TreeSection /&gt;
+      &lt;Divider /&gt;
+      &lt;GraphSection /&gt;
+      &lt;Divider /&gt;
+      &lt;LinkedListSection /&gt;
+      &lt;Divider /&gt;
+      &lt;QueueSection /&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function TreeSection() {
+  return (
+    &lt;Stack gap={14}&gt;
+      &lt;Row gap={8} align=&quot;center&quot;&gt;
+        &lt;H2&gt;Trees&lt;/H2&gt;
+        &lt;Pill tone=&quot;neutral&quot;&gt;Hierarchy&lt;/Pill&gt;
+      &lt;/Row&gt;
+
+      &lt;Grid columns={2} gap={16}&gt;
+        &lt;Stack gap={10}&gt;
+          &lt;Text&gt;
+            Hierarchical nodes (DOM, React fiber conceptually, file systems, UI
+            menus). DFS/BFS traversal; balanced trees for ordered maps.
+          &lt;/Text&gt;
+          &lt;Text&gt;
+            DFS walks deep before siblings (recursion or an explicit stack); BFS
+            walks level by level with a queue — useful for “nearest parent” and
+            breadth-limited UI expands.
+          &lt;/Text&gt;
+          &lt;Text tone=&quot;secondary&quot;&gt;
+            When: nested comments, org charts, virtualized file browsers. Prefer
+            adjacency lists from APIs over deep recursive props without memo
+            boundaries. Flat `id → children[]` maps keep React reconciliation
+            cheap and make virtualization straightforward.
+          &lt;/Text&gt;
+          &lt;Stack gap={4}&gt;
+            &lt;H3&gt;Complexity cheat&lt;/H3&gt;
+            &lt;Text tone=&quot;secondary&quot;&gt;
+              Visit all nodes: O(n). Search in unbalanced tree: O(n) worst.
+              Balanced BST / ordered map: O(log n) lookup.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/Stack&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;Tree · DFS vs BFS&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;TreeDiagram /&gt;
+            &lt;Stack gap={4} style={{ marginTop: 10 }}&gt;
+              &lt;Text size=&quot;small&quot; tone=&quot;secondary&quot;&gt;
+                DFS order: root → A → A1 → A2 → B → B1
+              &lt;/Text&gt;
+              &lt;Text size=&quot;small&quot; tone=&quot;secondary&quot;&gt;
+                BFS order: root → A → B → A1 → A2 → B1
+              &lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+      &lt;/Grid&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function GraphSection() {
+  return (
+    &lt;Stack gap={14}&gt;
+      &lt;Row gap={8} align=&quot;center&quot;&gt;
+        &lt;H2&gt;Graphs&lt;/H2&gt;
+        &lt;Pill tone=&quot;neutral&quot;&gt;Nodes + edges&lt;/Pill&gt;
+      &lt;/Row&gt;
+
+      &lt;Grid columns={2} gap={16}&gt;
+        &lt;Stack gap={10}&gt;
+          &lt;Text&gt;
+            Nodes + edges (directed/undirected). Used for dependency graphs,
+            social links, routing, monorepo project graphs.
+          &lt;/Text&gt;
+          &lt;Text&gt;
+            A tree is a special acyclic connected graph with one parent per
+            child; general graphs allow multiple parents, shared deps, and
+            cycles.
+          &lt;/Text&gt;
+          &lt;Text tone=&quot;secondary&quot;&gt;
+            When: permissions inheritance, recommendation edges, build
+            pipelines. Watch cycles; memoize expensive traversals. Detect cycles
+            with DFS color states or Kahn’s algorithm before topo-sort (Turborepo
+            / Nx style task graphs).
+          &lt;/Text&gt;
+          &lt;Stack gap={4}&gt;
+            &lt;H3&gt;Edge kinds&lt;/H3&gt;
+            &lt;Text tone=&quot;secondary&quot;&gt;
+              Directed: A→B (depends-on). Undirected: A—B (friendship). Weighted:
+              cost/latency on the edge for routing.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/Stack&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;Graph · build deps (+ cycle)&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;GraphDiagram /&gt;
+            &lt;Text size=&quot;small&quot; tone=&quot;secondary&quot; style={{ marginTop: 10 }}&gt;
+              Solid = forward deps. Dashed = back-edge (cycle) — topo-sort fails
+              until broken.
+            &lt;/Text&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+      &lt;/Grid&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function LinkedListSection() {
+  return (
+    &lt;Stack gap={14}&gt;
+      &lt;Row gap={8} align=&quot;center&quot;&gt;
+        &lt;H2&gt;Linked lists&lt;/H2&gt;
+        &lt;Pill tone=&quot;neutral&quot;&gt;Pointer chain&lt;/Pill&gt;
+      &lt;/Row&gt;
+
+      &lt;Grid columns={2} gap={16}&gt;
+        &lt;Stack gap={10}&gt;
+          &lt;Text&gt;
+            Nodes with next (and prev) pointers. O(1) insert/delete given a
+            reference; O(n) random access.
+          &lt;/Text&gt;
+          &lt;Text&gt;
+            Doubly linked lists add &lt;Code&gt;prev&lt;/Code&gt; so LRU caches can splice a
+            node to the front without scanning; singly linked lists are enough
+            for many interview reverse/merge puzzles.
+          &lt;/Text&gt;
+          &lt;Text tone=&quot;secondary&quot;&gt;
+            Rare in app UI vs arrays. Appears in interview algorithms, LRU cache
+            internals, some streaming buffers. Prefer arrays in React state —
+            contiguous memory and index access beat pointer chasing for typical
+            UI lists.
+          &lt;/Text&gt;
+        &lt;/Stack&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;Linked list · splice in O(1)&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;LinkedListDiagram /&gt;
+            &lt;Text size=&quot;small&quot; tone=&quot;secondary&quot; style={{ marginTop: 10 }}&gt;
+              Given a ref to node B, insert X between B and C by rewiring two
+              pointers — no shift of later elements like an array would need.
+            &lt;/Text&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+      &lt;/Grid&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function QueueSection() {
+  return (
+    &lt;Stack gap={14}&gt;
+      &lt;Row gap={8} align=&quot;center&quot;&gt;
+        &lt;H2&gt;Queues&lt;/H2&gt;
+        &lt;Pill tone=&quot;neutral&quot;&gt;FIFO&lt;/Pill&gt;
+      &lt;/Row&gt;
+
+      &lt;Grid columns={2} gap={16}&gt;
+        &lt;Stack gap={10}&gt;
+          &lt;Text&gt;
+            FIFO structure. Underpins task queues, job processors, BFS,
+            rate-limit windows.
+          &lt;/Text&gt;
+          &lt;Text&gt;
+            Enqueue at the back, dequeue from the front — fair ordering so the
+            oldest waiting item runs next (unlike a stack’s LIFO).
+          &lt;/Text&gt;
+          &lt;Text tone=&quot;secondary&quot;&gt;
+            Frontend: toast queues, upload queues, optimistic mutation queues.
+            Backend: SQS/Rabbit/Bull for Next background work. Same shape as the
+            browser task queue idea: work waits in line, one consumer drains it.
+          &lt;/Text&gt;
+        &lt;/Stack&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;Queue · enqueue / dequeue&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;QueueDiagram /&gt;
+            &lt;Text size=&quot;small&quot; tone=&quot;secondary&quot; style={{ marginTop: 10 }}&gt;
+              Front leaves first (dequeue). New jobs join the back (enqueue).
+              BFS uses this to expand neighbors level by level.
+            &lt;/Text&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+      &lt;/Grid&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function TreeDiagram() {
+  const theme = useHostTheme();
+  const stroke = theme.stroke.secondary;
+  const fill = theme.fill.tertiary;
+  const accent = theme.accent.primary;
+  const text = theme.text.primary;
+
+  const nodes: Array&lt;{ id: string; x: number; y: number; accent?: boolean }&gt; = [
+    { id: &quot;root&quot;, x: 160, y: 28, accent: true },
+    { id: &quot;A&quot;, x: 80, y: 100 },
+    { id: &quot;B&quot;, x: 240, y: 100 },
+    { id: &quot;A1&quot;, x: 30, y: 172 },
+    { id: &quot;A2&quot;, x: 100, y: 172 },
+    { id: &quot;B1&quot;, x: 240, y: 172 },
+  ];
+  const edges: Array&lt;[string, string]&gt; = [
+    [&quot;root&quot;, &quot;A&quot;],
+    [&quot;root&quot;, &quot;B&quot;],
+    [&quot;A&quot;, &quot;A1&quot;],
+    [&quot;A&quot;, &quot;A2&quot;],
+    [&quot;B&quot;, &quot;B1&quot;],
+  ];
+  const byId = Object.fromEntries(nodes.map((n) =&gt; [n.id, n]));
+
+  return (
+    &lt;svg viewBox=&quot;0 0 320 210&quot; width=&quot;100%&quot; style={{ display: &quot;block&quot; }}&gt;
+      {edges.map(([from, to]) =&gt; {
+        const a = byId[from];
+        const b = byId[to];
+        return (
+          &lt;line
+            key={`${from}-${to}`}
+            x1={a.x}
+            y1={a.y + 14}
+            x2={b.x}
+            y2={b.y - 14}
+            stroke={stroke}
+            strokeWidth={1.5}
+          /&gt;
+        );
+      })}
+      {nodes.map((n) =&gt; (
+        &lt;g key={n.id}&gt;
+          &lt;rect
+            x={n.x - 28}
+            y={n.y - 14}
+            width={56}
+            height={28}
+            rx={6}
+            fill={n.accent ? accent : fill}
+            stroke={stroke}
+          /&gt;
+          &lt;text
+            x={n.x}
+            y={n.y + 4}
+            textAnchor=&quot;middle&quot;
+            fontSize={12}
+            fill={n.accent ? theme.text.onAccent : text}
+            fontFamily=&quot;ui-sans-serif, system-ui, sans-serif&quot;
+          &gt;
+            {n.id}
+          &lt;/text&gt;
+        &lt;/g&gt;
+      ))}
+    &lt;/svg&gt;
+  );
+}
+
+function GraphDiagram() {
+  const theme = useHostTheme();
+  const layout = computeDAGLayout({
+    nodes: [{ id: &quot;app&quot; }, { id: &quot;ui&quot; }, { id: &quot;api&quot; }, { id: &quot;db&quot; }],
+    edges: [
+      { from: &quot;app&quot;, to: &quot;ui&quot; },
+      { from: &quot;app&quot;, to: &quot;api&quot; },
+      { from: &quot;ui&quot;, to: &quot;api&quot; },
+      { from: &quot;api&quot;, to: &quot;db&quot; },
+      { from: &quot;db&quot;, to: &quot;api&quot; },
+    ],
+    direction: &quot;vertical&quot;,
+    nodeWidth: 72,
+    nodeHeight: 32,
+    rankGap: 48,
+    nodeGap: 36,
+    padding: 12,
+  });
+
+  const stroke = theme.stroke.secondary;
+  const fill = theme.fill.tertiary;
+  const accent = theme.accent.primary;
+  const text = theme.text.primary;
+  const warn = theme.text.secondary;
+
+  return (
+    &lt;svg
+      viewBox={`0 0 ${layout.width} ${layout.height}`}
+      width=&quot;100%&quot;
+      style={{ display: &quot;block&quot; }}
+    &gt;
+      {layout.edges.map((e, i) =&gt; (
+        &lt;line
+          key={i}
+          x1={e.sourceX}
+          y1={e.sourceY}
+          x2={e.targetX}
+          y2={e.targetY}
+          stroke={e.isBackEdge ? accent : stroke}
+          strokeWidth={1.5}
+          strokeDasharray={e.isBackEdge ? &quot;4 3&quot; : undefined}
+        /&gt;
+      ))}
+      {layout.nodes.map((n) =&gt; (
+        &lt;g key={n.id}&gt;
+          &lt;rect
+            x={n.x}
+            y={n.y}
+            width={72}
+            height={32}
+            rx={6}
+            fill={n.id === &quot;app&quot; ? accent : fill}
+            stroke={stroke}
+          /&gt;
+          &lt;text
+            x={n.x + 36}
+            y={n.y + 21}
+            textAnchor=&quot;middle&quot;
+            fontSize={12}
+            fill={n.id === &quot;app&quot; ? theme.text.onAccent : text}
+            fontFamily=&quot;ui-sans-serif, system-ui, sans-serif&quot;
+          &gt;
+            {n.id}
+          &lt;/text&gt;
+        &lt;/g&gt;
+      ))}
+      &lt;text
+        x={12}
+        y={layout.height - 4}
+        fontSize={10}
+        fill={warn}
+        fontFamily=&quot;ui-sans-serif, system-ui, sans-serif&quot;
+      &gt;
+        cycle: db → api
+      &lt;/text&gt;
+    &lt;/svg&gt;
+  );
+}
+
+function LinkedListDiagram() {
+  const theme = useHostTheme();
+  const stroke = theme.stroke.secondary;
+  const fill = theme.fill.tertiary;
+  const accent = theme.accent.primary;
+  const text = theme.text.primary;
+
+  const nodes = [
+    { id: &quot;A&quot;, x: 36 },
+    { id: &quot;B&quot;, x: 116 },
+    { id: &quot;X&quot;, x: 196, insert: true },
+    { id: &quot;C&quot;, x: 276 },
+  ];
+
+  return (
+    &lt;svg viewBox=&quot;0 0 340 100&quot; width=&quot;100%&quot; style={{ display: &quot;block&quot; }}&gt;
+      {nodes.slice(0, -1).map((n, i) =&gt; {
+        const next = nodes[i + 1];
+        return (
+          &lt;line
+            key={`e-${n.id}`}
+            x1={n.x + 24}
+            y1={40}
+            x2={next.x - 24}
+            y2={40}
+            stroke={n.id === &quot;B&quot; || n.id === &quot;X&quot; ? accent : stroke}
+            strokeWidth={1.5}
+            markerEnd=&quot;url(#arrow)&quot;
+          /&gt;
+        );
+      })}
+      &lt;defs&gt;
+        &lt;marker
+          id=&quot;arrow&quot;
+          viewBox=&quot;0 0 10 10&quot;
+          refX={8}
+          refY={5}
+          markerWidth={6}
+          markerHeight={6}
+          orient=&quot;auto-start-reverse&quot;
+        &gt;
+          &lt;path d=&quot;M 0 0 L 10 5 L 0 10 z&quot; fill={stroke} /&gt;
+        &lt;/marker&gt;
+      &lt;/defs&gt;
+      {nodes.map((n) =&gt; (
+        &lt;g key={n.id}&gt;
+          &lt;rect
+            x={n.x - 24}
+            y={24}
+            width={48}
+            height={32}
+            rx={6}
+            fill={n.insert ? accent : fill}
+            stroke={stroke}
+            strokeDasharray={n.insert ? &quot;4 2&quot; : undefined}
+          /&gt;
+          &lt;text
+            x={n.x}
+            y={44}
+            textAnchor=&quot;middle&quot;
+            fontSize={12}
+            fill={n.insert ? theme.text.onAccent : text}
+            fontFamily=&quot;ui-sans-serif, system-ui, sans-serif&quot;
+          &gt;
+            {n.id}
+          &lt;/text&gt;
+        &lt;/g&gt;
+      ))}
+      &lt;text
+        x={196}
+        y={78}
+        textAnchor=&quot;middle&quot;
+        fontSize={10}
+        fill={theme.text.secondary}
+        fontFamily=&quot;ui-sans-serif, system-ui, sans-serif&quot;
+      &gt;
+        insert X after B
+      &lt;/text&gt;
+    &lt;/svg&gt;
+  );
+}
+
+function QueueDiagram() {
+  const theme = useHostTheme();
+  const stroke = theme.stroke.secondary;
+  const fill = theme.fill.tertiary;
+  const accent = theme.accent.primary;
+  const text = theme.text.primary;
+
+  const items = [
+    { id: &quot;1&quot;, label: &quot;job1&quot;, x: 70 },
+    { id: &quot;2&quot;, label: &quot;job2&quot;, x: 150 },
+    { id: &quot;3&quot;, label: &quot;job3&quot;, x: 230 },
+  ];
+
+  return (
+    &lt;svg viewBox=&quot;0 0 340 110&quot; width=&quot;100%&quot; style={{ display: &quot;block&quot; }}&gt;
+      &lt;text
+        x={40}
+        y={18}
+        fontSize={11}
+        fill={theme.text.secondary}
+        fontFamily=&quot;ui-sans-serif, system-ui, sans-serif&quot;
+      &gt;
+        dequeue ← front
+      &lt;/text&gt;
+      &lt;text
+        x={300}
+        y={18}
+        textAnchor=&quot;end&quot;
+        fontSize={11}
+        fill={theme.text.secondary}
+        fontFamily=&quot;ui-sans-serif, system-ui, sans-serif&quot;
+      &gt;
+        back → enqueue
+      &lt;/text&gt;
+
+      &lt;rect
+        x={40}
+        y={32}
+        width={260}
+        height={48}
+        rx={8}
+        fill=&quot;transparent&quot;
+        stroke={stroke}
+        strokeDasharray=&quot;3 3&quot;
+      /&gt;
+
+      {items.map((item, i) =&gt; (
+        &lt;g key={item.id}&gt;
+          &lt;rect
+            x={item.x - 28}
+            y={40}
+            width={56}
+            height={32}
+            rx={6}
+            fill={i === 0 ? accent : fill}
+            stroke={stroke}
+          /&gt;
+          &lt;text
+            x={item.x}
+            y={60}
+            textAnchor=&quot;middle&quot;
+            fontSize={12}
+            fill={i === 0 ? theme.text.onAccent : text}
+            fontFamily=&quot;ui-sans-serif, system-ui, sans-serif&quot;
+          &gt;
+            {item.label}
+          &lt;/text&gt;
+        &lt;/g&gt;
+      ))}
+
+      &lt;text
+        x={70}
+        y={100}
+        textAnchor=&quot;middle&quot;
+        fontSize={10}
+        fill={theme.text.secondary}
+        fontFamily=&quot;ui-sans-serif, system-ui, sans-serif&quot;
+      &gt;
+        next out
+      &lt;/text&gt;
+      &lt;text
+        x={280}
+        y={100}
+        textAnchor=&quot;middle&quot;
+        fontSize={10}
+        fill={theme.text.secondary}
+        fontFamily=&quot;ui-sans-serif, system-ui, sans-serif&quot;
+      &gt;
+        newest in
+      &lt;/text&gt;
+    &lt;/svg&gt;
+  );
+}
+</pre>
+      </details>
+    </section>
+  </div>
+</body>
+</html>

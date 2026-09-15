@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Rebuild an Angular quote card from memory using typed component APIs"
+    >
+    <title>Lesson 0003: Rebuild the quote card</title>
+    <link rel="stylesheet" href="../assets/course.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">Lesson 0003 · 35 minutes</p>
+        <h1>Rebuild an Angular component from memory</h1>
+        <p>
+          Restore component syntax you once knew, then connect Angular 16
+          decorator APIs to current signal-based APIs.
+        </p>
+        <nav aria-label="Lesson navigation">
+          <a href="0002-angular-typescript-principles.html">Previous lesson</a>
+          <a href="../reference/angular-typescript-principles.html"
+            >Full reference</a
+          >
+          <a href="../MISSION.md">Mission</a>
+        </nav>
+      </header>
+
+      <section class="callout">
+        <h2>Your target</h2>
+        <p>
+          In 12 minutes, write a valid component with a required typed input, a
+          typed output, derived spread, and working template bindings. Then
+          explain every line without notes.
+        </p>
+      </section>
+
+      <section>
+        <h2>Recover the component shape</h2>
+        <p>
+          Angular decorates a class. The class owns state and methods. The
+          template reads class members and binds DOM events to methods.
+          TypeScript interfaces disappear at runtime, but Angular component
+          metadata and emitters do not.
+        </p>
+        <pre><code>import { Component, computed, input, output } from '@angular/core';
+
+interface Quote {
+  readonly symbol: string;
+  readonly bid: number;
+  readonly ask: number;
+}
+
+@Component({
+  selector: 'app-quote-card',
+  template: `
+    &lt;button type="button" (click)="selectQuote()">
+      &lt;strong>{{ quote().symbol }}&lt;/strong>
+      &lt;span>Bid: {{ quote().bid }}&lt;/span>
+      &lt;span>Ask: {{ quote().ask }}&lt;/span>
+      &lt;span>Spread: {{ spread() }}&lt;/span>
+    &lt;/button>
+  `,
+})
+export class QuoteCard {
+  readonly quote = input.required&lt;Quote>();
+  readonly selected = output&lt;string>();
+  readonly spread = computed(() => this.quote().ask - this.quote().bid);
+
+  selectQuote(): void {
+    this.selected.emit(this.quote().symbol);
+  }
+}</code></pre>
+        <p>
+          A signal input is read by calling it. <code>computed()</code> derives
+          spread without storing a second writable value. The output emits user
+          intent to the parent.
+        </p>
+        <p class="small">
+          Primary source:
+          <a href="https://angular.dev/guide/components/inputs"
+            >Angular input guide</a
+          >,
+          <a href="https://angular.dev/guide/components/outputs"
+            >Angular output guide</a
+          >, and
+          <a href="https://angular.dev/guide/signals"
+            >Angular signals guide</a
+          >.
+        </p>
+      </section>
+
+      <section>
+        <h2>Bridge Angular 16 to current Angular</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Job</th>
+              <th>Angular 16 style</th>
+              <th>Current style</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Required input</td>
+              <td>
+                <code>@Input({ required: true }) quote!: Quote</code>
+              </td>
+              <td><code>quote = input.required&lt;Quote>()</code></td>
+            </tr>
+            <tr>
+              <td>Typed output</td>
+              <td>
+                <code
+                  >@Output() selected = new EventEmitter&lt;string>()</code
+                >
+              </td>
+              <td><code>selected = output&lt;string>()</code></td>
+            </tr>
+            <tr>
+              <td>Derived spread</td>
+              <td><code>get spread() { return this.quote.ask - ... }</code></td>
+              <td><code>spread = computed(() => this.quote().ask - ...)</code></td>
+            </tr>
+            <tr>
+              <td>Template read</td>
+              <td><code>{{ quote.symbol }}</code></td>
+              <td><code>{{ quote().symbol }}</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          In Angular 16, add <code>standalone: true</code> when building a
+          standalone component. Current Angular components are standalone by
+          default, so current official examples often omit that property.
+        </p>
+      </section>
+
+      <section>
+        <h2>Retrieval task, 12 minutes</h2>
+        <div class="task must">
+          <ol>
+            <li>Hide the examples above.</li>
+            <li>Start from a blank editor without code completion.</li>
+            <li>
+              Rebuild <code>QuoteCard</code> using the current APIs and exact
+              imports.
+            </li>
+            <li>Add a parent usage example with input and output binding.</li>
+            <li>Do not run it until you manually check every item below.</li>
+          </ol>
+        </div>
+        <label for="answer">Write or paste your solution:</label>
+        <textarea
+          id="answer"
+          spellcheck="false"
+          placeholder="Imports, interface, component, class, and parent template usage."
+        ></textarea>
+        <ul class="checklist">
+          <li>
+            <label
+              ><input type="checkbox">The component is a decorated exported
+              class.</label
+            >
+          </li>
+          <li>
+            <label
+              ><input type="checkbox">Every used Angular API has an exact
+              import.</label
+            >
+          </li>
+          <li>
+            <label
+              ><input type="checkbox">The required input and output carry
+              precise types.</label
+            >
+          </li>
+          <li>
+            <label
+              ><input type="checkbox">Spread is derived, not copied into
+              writable state.</label
+            >
+          </li>
+          <li>
+            <label
+              ><input type="checkbox">Interpolation uses double braces and
+              signal reads use calls.</label
+            >
+          </li>
+          <li>
+            <label
+              ><input type="checkbox">The click handler emits the current
+              symbol.</label
+            >
+          </li>
+          <li>
+            <label
+              ><input type="checkbox">The parent binds
+              <code>[quote]</code> and listens to
+              <code>(selected)</code>.</label
+            >
+          </li>
+        </ul>
+        <details>
+          <summary>Open after the manual check</summary>
+          <p>Parent usage should have this shape:</p>
+          <pre><code>&lt;app-quote-card
+  [quote]="currentQuote"
+  (selected)="openTrade($event)"
+/></code></pre>
+          <p>
+            Score 7/7 only when the component is syntactically coherent before
+            execution. If execution finds an error, record whether the miss was
+            syntax, API recall, data flow, or behavior.
+          </p>
+        </details>
+      </section>
+
+      <section>
+        <h2>Interview drill, 6 minutes</h2>
+        <p>
+          Answer aloud in 60 seconds: "Why is spread computed instead of
+          stored, and when would you emit the quote rather than its symbol?"
+        </p>
+        <details>
+          <summary>Check your answer</summary>
+          <p>
+            Computed state has one source of truth and cannot drift from bid or
+            ask. Emit the smallest value that represents the parent action. A
+            symbol fits navigation or selection. The full quote fits a parent
+            that must act on the exact displayed snapshot.
+          </p>
+        </details>
+        <p>
+          Ask your teacher about any line you cannot explain. Then paste your
+          rebuilt component and your 7-item score for feedback.
+        </p>
+      </section>
+
+      <nav aria-label="Course navigation">
+        <a href="../reference/0001-four-day-interview-roadmap.html"
+          >Return to the four-day roadmap</a
+        >
+        <a href="../RESOURCES.md">Open source list</a>
+      </nav>
+    </main>
+  </body>
+</html>

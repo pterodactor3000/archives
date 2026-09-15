@@ -8,6 +8,7 @@ import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 
 const config = defineConfig({
+  base: '/archives/apps/remote-learning/react-vite/',
   resolve: { tsconfigPaths: true },
   server: {
     host: '127.0.0.1',

@@ -9,3 +9,5 @@ const DrillsPage = () => {
 }
 
 export { DrillsPage }
+
+export default DrillsPage

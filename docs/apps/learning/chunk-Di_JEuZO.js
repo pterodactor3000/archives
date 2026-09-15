@@ -1,0 +1,1 @@
+import"./chunk-IlcHbRh2.js";import{n as Ms}from"./main-6JN4JIIM.js";export{Ms as OrderTicketExercise};

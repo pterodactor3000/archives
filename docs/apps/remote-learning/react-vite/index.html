@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>react-vite · remote-learning</title>
+  <style>
+    :root {
+      --bg: #0d1117; --surface: #161b22; --border: #30363d;
+      --text: #e6edf3; --muted: #848d97; --accent: #58a6ff; --green: #3fb950;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif;
+      line-height: 1.55; min-height: 100vh; padding: 2rem 1.25rem;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    nav { margin-bottom: 1.5rem; font-size: .875rem; }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.75rem 1.5rem; margin-top: 1rem;
+    }
+    h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -.02em; }
+    .lead { margin-top: .75rem; color: var(--muted); font-size: 1.05rem; }
+    .badge {
+      display: inline-block; margin-top: 1rem; padding: .2rem .55rem;
+      border-radius: 999px; border: 1px solid var(--border);
+      color: var(--green); font-size: .75rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--accent); }
+    ul { margin: 1rem 0 0 1.2rem; color: var(--muted); }
+    li { margin: .35rem 0; }
+    .note {
+      margin-top: 1.25rem; padding: .9rem 1rem; border-left: 3px solid var(--accent);
+      background: #0d1117; border-radius: 0 8px 8px 0; font-size: .9rem; color: var(--muted);
+    }
+    .actions { margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: .75rem; }
+    .btn {
+      display: inline-block; padding: .55rem 1rem; border-radius: 8px;
+      background: #21262d; border: 1px solid var(--border); color: var(--text);
+      text-decoration: none; font-size: .9rem;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn.primary { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a href="/archives/">← vault</a> ·
+      <a href="/archives/apps/remote-learning/">remote-learning hub</a>
+    </nav>
+    <div class="card">
+      <h1>Welcome to TanStack Start</h1>
+      <p class="lead">Interactive stand-in for the <code>react-vite</code> app (TanStack Start + Apollo + Query).</p>
+      <span class="badge">static stand-in · SSR runtime not on Pages</span>
+      <p class="note">
+        The real app builds with <strong>TanStack Start</strong> (client + Node SSR). GitHub Pages
+        cannot host the SSR server, so this page is a polished in-browser stand-in that still lives
+        under the vault site. Source: <code>courses/remote-learning/apps/react-vite</code>.
+      </p>
+      <ul>
+        <li>Edit <code>src/routes/index.tsx</code> in the vault copy to customize the home route.</li>
+        <li>Local full runtime: <code>npm run dev -w react-vite</code> from <code>courses/remote-learning</code>.</li>
+        <li>Sibling live apps: Angular + react-next are real static builds on this hub.</li>
+      </ul>
+      <div class="actions">
+        <a class="btn primary" href="/archives/apps/remote-learning/">Hub</a>
+        <a class="btn" href="/archives/apps/remote-learning/angular/">Angular (live)</a>
+        <a class="btn" href="/archives/apps/remote-learning/react-next/">react-next (live)</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
