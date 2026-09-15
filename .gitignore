@@ -1,0 +1,10 @@
+.archives/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+*.swp
+.DS_Store
+ingest/*
+!ingest/.gitkeep
