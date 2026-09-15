@@ -4,10 +4,13 @@ Local **learning vault** for programming / software-engineering study materials.
 
 Owned copies only. No clever sync magic. Subtract before add. Source repos are never deleted.
 
+**Catalog:** see **[INDEX.md](INDEX.md)** for every vault material file with working links.
+
 ## Layout
 
 ```
 README.md
+INDEX.md               # full catalog of vault materials (regenerate: archives index)
 archives.yaml          # sources + vault policy
 bin/archives           # single CLI entrypoint
 archives_lib/          # small Python package behind the CLI
@@ -28,6 +31,7 @@ ingest/                # staging clones from sources (gitignored contents)
 ./bin/archives ingest --dry-run
 ./bin/archives ingest
 ./bin/archives organize
+./bin/archives index      # regenerate INDEX.md after ingest
 ```
 
 Requires Python 3.10+ and `PyYAML` (`pip install pyyaml`). Git + `gh` for HTTPS clones when ingesting remote sources.
@@ -40,6 +44,7 @@ Requires Python 3.10+ and `PyYAML` (`pip install pyyaml`). Git + `gh` for HTTPS 
 | `archives ingest [--dry-run]` | Clone/update enabled git sources into `ingest/`, then **promote** owned copies into `{material}/{source_name}/`. Deferred sources stay skipped. |
 | `archives organize [--dry-run]` | Light normalize (e.g. trailing whitespace on `.md`) under material dirs |
 | `archives status` | Config validity, file counts (incl. per-source material subdirs), enabled/deferred sources, last ingest state |
+| `archives index` | Regenerate root [`INDEX.md`](INDEX.md) — full catalog with a relative link for every material file |
 
 Always:
 

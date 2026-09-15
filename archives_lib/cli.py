@@ -1,4 +1,4 @@
-"""archives CLI — setup | ingest | organize | status."""
+"""archives CLI — setup | ingest | organize | status | index."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from pathlib import Path
 
 from . import __version__
 from .config import find_repo_root
+from .index_cmd import run_index
 from .ingest_cmd import run_ingest
 from .organize_cmd import run_organize
 from .setup_cmd import run_setup
@@ -52,6 +53,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("status", help="Show config, counts, and last ingest")
 
+    sub.add_parser(
+        "index",
+        help="Regenerate root INDEX.md catalog of all vault material files",
+    )
+
     return p
 
 
@@ -68,6 +74,8 @@ def main(argv: list[str] | None = None) -> int:
         return run_organize(root, dry_run=args.dry_run)
     if args.command == "status":
         return run_status(root)
+    if args.command == "index":
+        return run_index(root)
 
     parser.error(f"unknown command: {args.command}")
     return 2
