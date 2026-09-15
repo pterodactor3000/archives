@@ -128,13 +128,15 @@ cp -a notes/stack-notes/out/. docs/apps/stack-notes/
 (cd courses/remote-learning && npm ci && npm run build -w @remote-learning/domain)
 (cd courses/remote-learning/apps/angular && npx ng build --base-href /archives/apps/remote-learning/angular/ --configuration production)
 (cd courses/remote-learning && npm run build -w react-next)
-# react-vite: TanStack Start SSR — ship stand-in HTML under docs/apps/remote-learning/react-vite/
-# (hub index.html is hand-maintained under docs/apps/remote-learning/)
+# react-vite: client-only TanStack Router SPA (vite.config base + router basepath)
+(cd courses/remote-learning && npm run build -w react-vite)
 
-rm -rf docs/apps/remote-learning/angular docs/apps/remote-learning/react-next
-mkdir -p docs/apps/remote-learning/angular docs/apps/remote-learning/react-next
+rm -rf docs/apps/remote-learning/angular docs/apps/remote-learning/react-next docs/apps/remote-learning/react-vite
+mkdir -p docs/apps/remote-learning/angular docs/apps/remote-learning/react-next docs/apps/remote-learning/react-vite
 cp -a courses/remote-learning/apps/angular/dist/angular/browser/. docs/apps/remote-learning/angular/
 cp -a courses/remote-learning/apps/react-next/out/. docs/apps/remote-learning/react-next/
+cp -a courses/remote-learning/apps/react-vite/dist/. docs/apps/remote-learning/react-vite/
+# hub index.html is hand-maintained under docs/apps/remote-learning/
 
 ./bin/archives index   # refresh catalog + canvas stand-ins; keeps docs/apps builds
 ```
@@ -143,7 +145,7 @@ Vault-local config tweaks for static hosting (owned copies — OK to adjust):
 
 - `notes/stack-notes/next.config.ts` — `output: 'export'`, `basePath` / `assetPrefix` `/archives/apps/stack-notes`
 - `courses/remote-learning/apps/react-next/next.config.ts` — same for `/archives/apps/remote-learning/react-next` + default export on `drills-page`
-- `courses/remote-learning/apps/react-vite/vite.config.ts` — `base: '/archives/apps/remote-learning/react-vite/'` (SSR still not Pages-hostable)
+- `courses/remote-learning/apps/react-vite/` — client-only Vite SPA (`vite.config.ts` `base` + router `basepath`); dropped TanStack Start SSR for Pages
 
 ### Local preview (optional)
 
