@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +13,7 @@ except ImportError:  # pragma: no cover
 
 REQUIRED_MATERIAL_DIRS = ("notes", "cheatsheets", "courses", "drills")
 REQUIRED_TOP = ("vault", "sources")
+VALID_SOURCE_TYPES = ("git", "local", "cursor-codebase")
 
 
 def find_repo_root(start: Path | None = None) -> Path:
@@ -77,6 +77,22 @@ def validate_config(cfg: dict[str, Any], repo_root: Path) -> list[str]:
                 errors.append(f"sources[{i}] missing type")
             if "enabled" not in src:
                 errors.append(f"sources[{i}] missing enabled")
+            material = src.get("material")
+            if material is not None and material not in REQUIRED_MATERIAL_DIRS:
+                errors.append(
+                    f"sources[{i}] ({src.get('name', '?')}) material "
+                    f"must be one of {list(REQUIRED_MATERIAL_DIRS)}, got {material!r}"
+                )
+            # Enabled git/local sources that stage should declare material for promote
+            if (
+                src.get("enabled")
+                and src.get("type") in ("git", "local")
+                and material is None
+            ):
+                errors.append(
+                    f"sources[{i}] ({src.get('name', '?')}) enabled "
+                    f"{src.get('type')} source missing material"
+                )
 
     return errors
 

@@ -1,0 +1,10 @@
+assets/
+dist/
+learning-records/
+lessons/
+node_modules/
+reference/
+tmp/
+MISSION.md
+NOTES.md
+RESOURCES.md

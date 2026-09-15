@@ -32,12 +32,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     ing = sub.add_parser(
         "ingest",
-        help="Copy from configured sources into ingest/ (never deletes sources)",
+        help=(
+            "Stage enabled sources into ingest/, then promote owned copies "
+            "into material/{name}/ (never deletes upstream sources)"
+        ),
     )
     ing.add_argument(
         "--dry-run",
         action="store_true",
-        help="Show what would happen without writing",
+        help="Show stage + promote steps without writing",
     )
 
     org = sub.add_parser("organize", help="Light normalize of material dirs")

@@ -1,0 +1,27 @@
+{
+  "name": "remote-learning",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run build -w @remote-learning/domain && concurrently -k -n domain,next,vite,angular -c yellow,cyan,green,magenta \"npm run dev -w @remote-learning/domain\" \"npm run dev -w react-next\" \"npm run dev -w react-vite\" \"npm run start -w @remote-learning/angular\"",
+    "dev:react-next": "npm run build -w @remote-learning/domain && npm run dev -w react-next",
+    "dev:react-vite": "npm run build -w @remote-learning/domain && npm run dev -w react-vite",
+    "dev:angular": "npm run build -w @remote-learning/domain && npm run start -w @remote-learning/angular",
+    "hours": "xdg-open index.html 2>/dev/null || open index.html",
+    "test": "npm run build -w @remote-learning/domain && npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "@parcel/watcher@2.6.0": true
+  }
+}
