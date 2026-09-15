@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 0002: Angular and TypeScript principles</title>
+  <link rel="stylesheet" href="../assets/course.css">
+  <style>
+    fieldset {
+      border: 1px solid var(--line);
+      border-radius: 0.4rem;
+      margin: 1rem 0;
+      padding: 1rem;
+    }
+
+    legend {
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      font-weight: 700;
+      padding: 0 0.35rem;
+    }
+
+    fieldset label {
+      display: block;
+      margin: 0.55rem 0;
+    }
+
+    .feedback {
+      font-weight: 700;
+      min-height: 1.5em;
+    }
+
+    details {
+      border-left: 0.25rem solid var(--line);
+      margin-top: 0.75rem;
+      padding-left: 0.8rem;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Lesson 0002 · 25 minutes</p>
+      <h1>Explain the boundary, then defend the choice</h1>
+      <p>This lesson trains four interview moves: separate Angular from TypeScript and JavaScript, choose state tools, explain OnPush, and validate API data.</p>
+      <nav aria-label="Lesson navigation">
+        <a href="../MISSION.md">Mission</a>
+        <a href="../reference/angular-typescript-principles.html">Full reference</a>
+      </nav>
+    </header>
+
+    <section>
+      <h2>Mission tie-in</h2>
+      <p>Your four-day goal is retrieval speed under interview pressure. Finish this lesson without opening the reference first. Then use the reference only to repair gaps.</p>
+      <div class="task must">
+        <h3>Success check</h3>
+        <p>By the end, you can give a 60-second answer that names the layer, explains why a tool fits, gives an example, and admits one tradeoff.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Retrieve before reading</h2>
+      <p>Write from memory. Two minutes total.</p>
+      <label for="warmup">What do Angular, TypeScript, and JavaScript each do?</label>
+      <textarea id="warmup" placeholder="Angular...&#10;TypeScript...&#10;JavaScript..."></textarea>
+      <details>
+        <summary>Check the distinction</summary>
+        <p>Angular is the runtime UI framework. TypeScript checks source code before runtime and emits JavaScript. JavaScript executes in the browser or server. Network data and object mutation are runtime facts, so TypeScript alone cannot validate them.</p>
+      </details>
+    </section>
+
+    <section>
+      <h2>Four moves worth rehearsing</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>1. Draw a component boundary</h3>
+          <p>Inputs carry data in. Outputs report user intent out. Injected services handle shared state or external work. Split a child when it owns behavior, reuse, or a useful test seam.</p>
+          <p class="small"><a href="https://angular.dev/guide/components/inputs">Official Angular input guide</a></p>
+        </article>
+        <article class="card">
+          <h3>2. Match state to time</h3>
+          <p>A signal holds a value available now. A computed signal derives another value. An Observable models values over time and supports cancellation and operator pipelines.</p>
+          <p class="small"><a href="https://angular.dev/guide/signals">Official signals guide</a> · <a href="https://rxjs.dev/guide/observable">Official RxJS guide</a></p>
+        </article>
+        <article class="card">
+          <h3>3. Explain OnPush with identity</h3>
+          <p>OnPush lets Angular skip eligible subtrees. A new input reference is visible. In-place mutation keeps the same reference and can leave the UI stale. Signals read by a template also notify Angular when they change.</p>
+          <p class="small"><a href="https://angular.dev/best-practices/skipping-subtrees">Official OnPush guide</a></p>
+        </article>
+        <article class="card">
+          <h3>4. Treat API data as unknown</h3>
+          <p>Type annotations disappear during compilation. Parse external data as <code>unknown</code>, check its runtime shape, then return a trusted domain type. An <code>as</code> assertion does not validate a value.</p>
+          <p class="small"><a href="https://www.typescriptlang.org/docs/handbook/2/functions.html#unknown">Official unknown reference</a></p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Concrete example</h2>
+      <p>This component keeps local display state as signals and leaves asynchronous data loading in a service.</p>
+      <pre><code>@Component({
+  selector: 'app-quote-card',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    &lt;button type="button" (click)="refresh()">Refresh {{ symbol() }}&lt;/button>
+    @if (quote(); as current) {
+      &lt;p>{{ current.price | currency }}&lt;/p>
+    }
+  `,
+  imports: [CurrencyPipe],
+})
+export class QuoteCard {
+  readonly symbol = input.required&lt;string>();
+  readonly refreshed = output&lt;Quote>();
+  readonly quote = signal&lt;Quote | null>(null);
+  private readonly quotes = inject(QuoteService);
+
+  refresh(): void {
+    this.quotes.load(this.symbol())
+      .pipe(take(1))
+      .subscribe(quote => {
+        this.quote.set(quote);
+        this.refreshed.emit(quote);
+      });
+  }
+}</code></pre>
+      <div class="task">
+        <h3>Say the tradeoff aloud</h3>
+        <p>This imperative subscription is short because the request completes. For repeated or long-lived streams, prefer template consumption with <code>AsyncPipe</code> or destruction-aware cleanup such as <code>takeUntilDestroyed()</code>.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Check your choices</h2>
+      <form id="quiz">
+        <fieldset data-answer="b" data-explanation="A discriminated union models each valid state and supports exhaustive narrowing.">
+          <legend>1. Which type best prevents data and error states from existing together?</legend>
+          <label><input type="radio" name="q1" value="a"> One interface with several optional fields</label>
+          <label><input type="radio" name="q1" value="b"> One union with a literal status field</label>
+          <label><input type="radio" name="q1" value="c"> One class with several public fields</label>
+          <p class="feedback" aria-live="polite"></p>
+        </fieldset>
+
+        <fieldset data-answer="c" data-explanation="unknown accepts external values but blocks property access until code narrows or validates them.">
+          <legend>2. Which type is the safest starting point for parsed API data?</legend>
+          <label><input type="radio" name="q2" value="a"> any, because the payload is dynamic</label>
+          <label><input type="radio" name="q2" value="b"> Quote, because fetch is type-aware</label>
+          <label><input type="radio" name="q2" value="c"> unknown, because checks are required</label>
+          <p class="feedback" aria-live="polite"></p>
+        </fieldset>
+
+        <fieldset data-answer="a" data-explanation="A new object reference makes the input change visible. Mutating the existing object preserves its identity.">
+          <legend>3. Which parent update best fits an OnPush child input?</legend>
+          <label><input type="radio" name="q3" value="a"> Replace the object with a copied value</label>
+          <label><input type="radio" name="q3" value="b"> Mutate the object and keep its value</label>
+          <label><input type="radio" name="q3" value="c"> Read the object inside its constructor</label>
+          <p class="feedback" aria-live="polite"></p>
+        </fieldset>
+
+        <fieldset data-answer="b" data-explanation="An Observable fits a changing stream where cancellation and time-based operators matter.">
+          <legend>4. Which tool best fits live search with debounce and cancellation?</legend>
+          <label><input type="radio" name="q4" value="a"> A plain field with a click handler</label>
+          <label><input type="radio" name="q4" value="b"> An Observable with switchMap logic</label>
+          <label><input type="radio" name="q4" value="c"> A readonly type with object spread</label>
+          <p class="feedback" aria-live="polite"></p>
+        </fieldset>
+
+        <button type="submit">Check answers</button>
+        <p id="score" class="score" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section>
+      <h2>One-minute interview drill</h2>
+      <div class="task must">
+        <label for="answer"><strong>Prompt:</strong> "Would you use a signal or an Observable for a price screen, and how would OnPush affect the design?"</label>
+        <textarea id="answer" placeholder="Decision...&#10;Reason...&#10;Example...&#10;Tradeoff..."></textarea>
+        <details>
+          <summary>Compare with a model answer</summary>
+          <p>I would use an Observable for the incoming price stream because it changes over time and may need reconnection, throttling, or cancellation. I would expose the stream to the template through <code>AsyncPipe</code>, or convert it once at a clear boundary if the rest of the component uses signals. With OnPush, the async emission or signal update schedules the view for checking. I would keep input objects immutable so reference changes remain visible. The tradeoff is that mixing signals and RxJS carelessly adds conversion and ownership questions.</p>
+        </details>
+      </div>
+    </section>
+
+    <section>
+      <h2>Finish</h2>
+      <ol>
+        <li>Re-answer every missed quiz item without looking.</li>
+        <li>Open the <a href="../reference/angular-typescript-principles.html">full reference</a> and repair one weak topic.</li>
+        <li>Ask your teacher a follow-up question about any tradeoff you cannot defend aloud.</li>
+      </ol>
+      <p>Primary-source recommendation: use Angular's official guides and the TypeScript Handbook before blog summaries. They define current APIs and the type system directly.</p>
+      <p class="small">No learning record is created here. Record completion only after you finish the retrieval drill and quiz.</p>
+    </section>
+  </main>
+
+  <script>
+    const quiz = document.querySelector('#quiz');
+
+    quiz.addEventListener('submit', event => {
+      event.preventDefault();
+      const questions = [...quiz.querySelectorAll('fieldset')];
+      let correctCount = 0;
+
+      for (const question of questions) {
+        const selected = question.querySelector('input:checked');
+        const feedback = question.querySelector('.feedback');
+
+        if (!selected) {
+          feedback.textContent = 'Choose an answer, then check again.';
+          continue;
+        }
+
+        const isCorrect = selected.value === question.dataset.answer;
+        if (isCorrect) correctCount += 1;
+        feedback.textContent = `${isCorrect ? 'Correct.' : 'Not yet.'} ${question.dataset.explanation}`;
+      }
+
+      document.querySelector('#score').textContent =
+        `Score: ${correctCount} of ${questions.length}.`;
+    });
+  </script>
+</body>
+</html>

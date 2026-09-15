@@ -11,24 +11,27 @@ vault:
   staging: ingest
 
 sources:
-  # Active git sources (cloned/copied into ingest/, then owned into materials/)
+  # Active git sources (cloned into ingest/, then promoted into materials/)
   - name: learning
     type: git
     url: https://github.com/pterodactor3000/learning
     enabled: true
     dest: ingest/learning
+    material: courses
 
   - name: remote-learning
     type: git
     url: https://github.com/pterodactor3000/remote-learning
     enabled: true
     dest: ingest/remote-learning
+    material: courses
 
   - name: stack-notes
     type: git
     url: https://github.com/pterodactor3000/stack-notes
     enabled: true
     dest: ingest/stack-notes
+    material: notes
 
   # Deferred — enable when ready; ingest skips these until enabled: true
   - name: node-sql-refresher

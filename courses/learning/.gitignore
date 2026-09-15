@@ -1,0 +1,16 @@
+# Angular build output
+/dist
+/out-tsc
+/.angular/cache
+/coverage
+
+# Node
+/node_modules
+npm-debug.log
+
+# Temporary scaffold
+/tmp
+
+# System files
+.DS_Store
+Thumbs.db

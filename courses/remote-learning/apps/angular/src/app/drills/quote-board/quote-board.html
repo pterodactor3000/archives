@@ -1,0 +1,21 @@
+<table>
+  <caption>Sample quotes from @remote-learning/domain</caption>
+  <thead>
+    <tr>
+      <th scope="col">Symbol</th>
+      <th scope="col">Bid</th>
+      <th scope="col">Ask</th>
+      <th scope="col">Spread</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of rows; track row.symbol) {
+      <tr>
+        <th scope="row">{{ row.symbol }}</th>
+        <td>{{ row.bid }}</td>
+        <td>{{ row.ask }}</td>
+        <td>{{ row.spread }}</td>
+      </tr>
+    }
+  </tbody>
+</table>

@@ -15,7 +15,7 @@ notes/                 # owned notes / markdown
 cheatsheets/
 courses/               # course dumps
 drills/                # drills / katas
-ingest/                # staging copies from sources (gitignored contents)
+ingest/                # staging clones from sources (gitignored contents)
 .github/workflows/     # optional minimal CI smoke
 ```
 
@@ -37,9 +37,9 @@ Requires Python 3.10+ and `PyYAML` (`pip install pyyaml`). Git + `gh` for HTTPS 
 | Command | Purpose |
 |---------|---------|
 | `archives setup` | Ensure material dirs + `.archives/`; validate `archives.yaml` |
-| `archives ingest [--dry-run]` | Clone/update enabled git sources into `ingest/`; copy enabled local paths. Deferred sources stay skipped. |
+| `archives ingest [--dry-run]` | Clone/update enabled git sources into `ingest/`, then **promote** owned copies into `{material}/{source_name}/`. Deferred sources stay skipped. |
 | `archives organize [--dry-run]` | Light normalize (e.g. trailing whitespace on `.md`) under material dirs |
-| `archives status` | Config validity, file counts, enabled/deferred sources, last ingest state |
+| `archives status` | Config validity, file counts (incl. per-source material subdirs), enabled/deferred sources, last ingest state |
 
 Always:
 
@@ -49,25 +49,39 @@ Always:
 
 ## Sources (`archives.yaml`)
 
-**Enabled (ingested automatically):**
+**Enabled (ingested + promoted automatically):**
 
-- https://github.com/pterodactor3000/learning
-- https://github.com/pterodactor3000/remote-learning
-- https://github.com/pterodactor3000/stack-notes
+| Source | Staging | Material |
+|--------|---------|----------|
+| [learning](https://github.com/pterodactor3000/learning) | `ingest/learning` | `courses/learning/` |
+| [remote-learning](https://github.com/pterodactor3000/remote-learning) | `ingest/remote-learning` | `courses/remote-learning/` |
+| [stack-notes](https://github.com/pterodactor3000/stack-notes) | `ingest/stack-notes` | `notes/stack-notes/` |
+
+Each enabled `git` / `local` source must set `material:` to one of `notes` \| `cheatsheets` \| `courses` \| `drills`.
 
 **Deferred / manual** (`enabled: false` until you flip them):
 
 - Cursor codebases: `pterodactor/node-sql-refresher`, `pterodactor/agent-atlas`
 - Local: `/home/pterodactorius/.cursor/projects/empty-window/canvases/`
 
-Ingest writes vault-owned copies under `ingest/`. It never deletes the upstream repos. Staging under `ingest/` may be replaced (subtract-before-add). Promote content into `notes/`, `cheatsheets/`, `courses/`, or `drills/` by hand (or extend organize later) so the vault stays deliberate.
+### Ingest + promote
+
+1. **Stage** — clone/update into `ingest/{name}/` (gitignored; may keep `.git` for pulls).
+2. **Promote** — copy the tree into `{material}/{name}/` as a vault-owned copy:
+   - strips `.git` (not a nested clone)
+   - excludes junk: `node_modules`, `.next`, `dist`, `build`, `.turbo`, `coverage`, `__pycache__`, `.DS_Store`, etc.
+   - with `subtract_before_add: true`, removes the previous owned `{material}/{name}/` before copying fresh
+3. Upstream source repos are never deleted or modified.
+
+`--dry-run` covers both stage and promote (no writes, no state file).
 
 ## Policy
 
-1. **Owned copies** — the vault holds its own trees; sources remain authoritative elsewhere.
-2. **Subtract before add** — when refreshing a staging destination, remove the previous vault-owned copy first, then copy/clone again.
-3. **Do not delete source originals** — only paths inside this repo (especially `ingest/`) are mutable by the CLI.
-4. **Materials** — notes, markdown, cheatsheets, course dumps, drills/katas.
+1. **Owned copies** — the vault holds its own trees under material folders; staging stays disposable.
+2. **Subtract before add** — when refreshing staging or a material destination, remove the previous vault-owned copy first, then copy/clone again.
+3. **Do not delete source originals** — only paths inside this repo (`ingest/`, material subdirs) are mutable by the CLI.
+4. **Materials** — notes, markdown, cheatsheets, course dumps, drills/katas — these are tracked by git; `ingest/` is not.
+5. **Staging can stay gitignored** — promote is what makes content visible to the vault / VCS.
 
 ## State
 

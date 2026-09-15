@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Adaptive Angular, TypeScript, and algorithm interview baseline diagnostic"
+    />
+    <title>Lesson 0001: Adaptive interview diagnostic</title>
+    <link rel="stylesheet" href="../assets/course.css" />
+    <script src="../assets/diagnostic.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">Lesson 0001 · 45 minutes</p>
+        <h1>Find your highest-value gaps</h1>
+        <p>
+          Goal: produce an honest Angular, TypeScript, and algorithm baseline
+          that your teacher can use to tune the next three days.
+        </p>
+      </header>
+
+      <section class="callout">
+        <h2>Rules</h2>
+        <ul>
+          <li>Use a plain editor. Do not search, run code, or read notes.</li>
+          <li>Stop each task when its timer ends.</li>
+          <li>Say "I do not know" instead of guessing from familiarity.</li>
+          <li>
+            This measures retrieval under pressure. It does not certify
+            mastery.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Part 1: knowledge check, 7 minutes</h2>
+        <form data-diagnostic-quiz>
+          <fieldset class="task" data-answer="a">
+            <legend>
+              1. An API response enters strict TypeScript as
+              <code>unknown</code>. What comes next?
+            </legend>
+            <label
+              ><input type="radio" name="q1" value="a" /> Check shape before
+              property access</label
+            ><br />
+            <label
+              ><input type="radio" name="q1" value="b" /> Cast value before
+              property access</label
+            ><br />
+            <label
+              ><input type="radio" name="q1" value="c" /> Use any before
+              property access</label
+            ><br />
+            <label
+              ><input type="radio" name="q1" value="d" /> Trust schema before
+              property access</label
+            >
+          </fieldset>
+
+          <fieldset class="task" data-answer="a">
+            <legend>
+              2. What best catches an unhandled discriminated-union member?
+            </legend>
+            <label
+              ><input type="radio" name="q2" value="a" /> Add a never
+              assignment</label
+            ><br />
+            <label
+              ><input type="radio" name="q2" value="b" /> Add an object
+              assertion</label
+            ><br />
+            <label
+              ><input type="radio" name="q2" value="c" /> Add a fallback
+              return</label
+            ><br />
+            <label
+              ><input type="radio" name="q2" value="d" /> Add optional field
+              guards</label
+            >
+          </fieldset>
+
+          <fieldset class="task" data-answer="a">
+            <legend>
+              3. In current Angular, a value derives only from other signals.
+              Which tool fits?
+            </legend>
+            <label
+              ><input type="radio" name="q3" value="a" /> Use a computed
+              signal</label
+            ><br />
+            <label
+              ><input type="radio" name="q3" value="b" /> Use a writable
+              signal</label
+            ><br />
+            <label
+              ><input type="radio" name="q3" value="c" /> Use a template
+              method</label
+            ><br />
+            <label
+              ><input type="radio" name="q3" value="d" /> Use one effect
+              callback</label
+            >
+          </fieldset>
+
+          <fieldset class="task" data-answer="a">
+            <legend>
+              4. Which design makes an Angular service dependency easiest to
+              replace in a test?
+            </legend>
+            <label
+              ><input type="radio" name="q4" value="a" /> Inject through
+              provider configuration</label
+            ><br />
+            <label
+              ><input type="radio" name="q4" value="b" /> Create inside each
+              method</label
+            ><br />
+            <label
+              ><input type="radio" name="q4" value="c" /> Read from global
+              scope</label
+            ><br />
+            <label
+              ><input type="radio" name="q4" value="d" /> Store inside
+              component template</label
+            >
+          </fieldset>
+
+          <fieldset class="task" data-answer="a">
+            <legend>
+              5. Which strategy finds a target pair in an unsorted array in
+              expected linear time?
+            </legend>
+            <label
+              ><input type="radio" name="q5" value="a" /> Track complements in
+              Map</label
+            ><br />
+            <label
+              ><input type="radio" name="q5" value="b" /> Compare every
+              possible pair</label
+            ><br />
+            <label
+              ><input type="radio" name="q5" value="c" /> Sort after every
+              lookup</label
+            ><br />
+            <label
+              ><input type="radio" name="q5" value="d" /> Scan values without
+              storage</label
+            >
+          </fieldset>
+
+          <fieldset class="task" data-answer="a">
+            <legend>
+              6. Which pattern often fits a longest contiguous range under a
+              changing constraint?
+            </legend>
+            <label
+              ><input type="radio" name="q6" value="a" /> Maintain one sliding
+              window</label
+            ><br />
+            <label
+              ><input type="radio" name="q6" value="b" /> Maintain one binary
+              heap</label
+            ><br />
+            <label
+              ><input type="radio" name="q6" value="c" /> Maintain one
+              recursion stack</label
+            ><br />
+            <label
+              ><input type="radio" name="q6" value="d" /> Maintain one sorted
+              tree</label
+            >
+          </fieldset>
+
+          <button type="submit">Score knowledge check</button>
+          <p
+            class="score"
+            data-diagnostic-result
+            tabindex="-1"
+            aria-live="polite"
+          ></p>
+        </form>
+      </section>
+
+      <section>
+        <h2>Part 2: TypeScript task, 9 minutes</h2>
+        <p>
+          Rewrite <code>describeTrade</code> with no <code>any</code>, no
+          unchecked assertion, and exhaustive handling. Treat input as external
+          data. It may be malformed.
+        </p>
+        <pre><code>interface EquityTrade {
+  kind: "equity";
+  symbol: string;
+  quantity: number;
+}
+
+interface BondTrade {
+  kind: "bond";
+  isin: string;
+  faceValue: number;
+}
+
+type Trade = EquityTrade | BondTrade;
+
+function describeTrade(payload: any): string {
+  const trade = payload as Trade;
+  if (trade.kind === "equity") {
+    return `${trade.symbol}: ${trade.quantity}`;
+  }
+  return `${trade.isin}: ${trade.faceValue}`;
+}</code></pre>
+        <textarea
+          aria-label="TypeScript diagnostic answer"
+          spellcheck="false"
+          placeholder="Write your answer here, or use a local editor."
+        ></textarea>
+        <details>
+          <summary>Scoring rubric, open after timer</summary>
+          <ul>
+            <li>0: no working direction</li>
+            <li>1: replaces <code>any</code> but still trusts input</li>
+            <li>2: narrows fields safely and returns useful invalid-data behavior</li>
+            <li>
+              3: also models the union cleanly and proves exhaustive handling
+            </li>
+          </ul>
+        </details>
+      </section>
+
+      <section>
+        <h2>Part 3: Angular task, 9 minutes</h2>
+        <p>
+          Sketch a standalone <code>QuoteCard</code> component. It receives a
+          required typed quote, derives spread without duplicated state, emits
+          the selected symbol, and renders all three values. Exact imports
+          count. No service is needed.
+        </p>
+        <pre><code>interface Quote {
+  symbol: string;
+  bid: number;
+  ask: number;
+}</code></pre>
+        <textarea
+          aria-label="Angular diagnostic answer"
+          spellcheck="false"
+          placeholder="Write component TypeScript and template here."
+        ></textarea>
+        <details>
+          <summary>Scoring rubric, open after timer</summary>
+          <ul>
+            <li>0: no coherent component shape</li>
+            <li>1: renders data but uses loose types or duplicated state</li>
+            <li>2: typed input, derived spread, and typed output work together</li>
+            <li>
+              3: modern APIs, valid imports, immutable fields, and clear
+              template binding
+            </li>
+          </ul>
+        </details>
+      </section>
+
+      <section>
+        <h2>Part 4: algorithm task, 15 minutes</h2>
+        <p>
+          Solve
+          <a href="https://leetcode.com/problems/two-sum/">Two Sum</a> in
+          TypeScript. Before coding, say your invariant. After coding, test a
+          duplicate-value case and state time and space complexity.
+        </p>
+        <textarea
+          aria-label="Algorithm diagnostic answer"
+          spellcheck="false"
+          placeholder="Invariant, code, test case, time, and space."
+        ></textarea>
+        <details>
+          <summary>Scoring rubric, open after timer</summary>
+          <ul>
+            <li>0: no complete approach</li>
+            <li>1: working quadratic solution with some tests</li>
+            <li>2: correct map solution and correct complexity</li>
+            <li>
+              3: also explains invariant, duplicate handling, and edge cases
+              clearly
+            </li>
+          </ul>
+        </details>
+      </section>
+
+      <section>
+        <h2>Report your baseline, 5 minutes</h2>
+        <p>
+          Fill this in, copy it, and paste it into your chat with the teacher.
+          Include code if you want line-level feedback. Your teacher will use
+          the weakest section to choose lesson 0002 and adjust days 2 through
+          4.
+        </p>
+        <textarea data-report-template aria-label="Diagnostic report template">
+Diagnostic report
+- Knowledge check: __/6
+- TypeScript task: __/3. Main difficulty:
+- Angular task: __/3. Main difficulty:
+- Algorithm task: __/3. Finished in __ minutes. Main difficulty:
+- Angular experience and most recent version used:
+- TypeScript experience:
+- LeetCode experience:
+- Daily study time available:
+- Interview format, role level, and known topics:
+- Code or questions:</textarea
+        >
+        <button type="button" data-copy-report>Copy report</button>
+
+        <div class="grid">
+          <article class="card">
+            <h3>Any section at 0 or 1</h3>
+            <p>Start with fundamentals and one guided implementation.</p>
+          </article>
+          <article class="card">
+            <h3>Any section at 2</h3>
+            <p>Use targeted repair, retrieval, and a second variation.</p>
+          </article>
+          <article class="card">
+            <h3>All sections at 3</h3>
+            <p>Raise time pressure and use design and debugging prompts.</p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <h2>Primary sources</h2>
+        <ul>
+          <li>
+            <a href="https://angular.dev/guide/components/inputs"
+              >Angular component inputs</a
+            >
+            and
+            <a href="https://angular.dev/guide/components/outputs">outputs</a>
+          </li>
+          <li>
+            <a href="https://angular.dev/guide/signals"
+              >Angular signals and computed values</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html"
+              >TypeScript narrowing and discriminated unions</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Keyed_collections"
+              >MDN keyed collections</a
+            >
+          </li>
+        </ul>
+        <p>
+          After finishing, read only the source for your weakest section. Ask
+          your teacher follow-up questions about any unclear answer, API, or
+          tradeoff.
+        </p>
+      </section>
+
+      <nav aria-label="Course navigation">
+        <a href="../reference/0002-diagnostic-solution-key.html"
+          >Open solution key after scoring</a
+        >
+        <a href="../reference/0001-four-day-interview-roadmap.html"
+          >Open four-day roadmap</a
+        >
+        <a href="../reference/angular-typescript-principles.html"
+          >Open Angular and TypeScript reference</a
+        >
+        <a href="../RESOURCES.md">Open source list</a>
+      </nav>
+    </main>
+  </body>
+</html>

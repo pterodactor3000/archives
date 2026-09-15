@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hours - remote-learning</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0d1117;
+      --surface: #161b22;
+      --border:  #21262d;
+      --border2: #30363d;
+      --text:    #e6edf3;
+      --muted:   #848d97;
+      --green:   #3fb950;
+      --amber:   #d29922;
+      --purple:  #a371f7;
+      --red:     #f85149;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 2.5rem 2rem;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    /* ── header ── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 { font-size: 1.25rem; font-weight: 600; letter-spacing: -.01em; }
+
+    .stats { color: var(--muted); font-size: .8125rem; }
+
+    .refresh-btn {
+      margin-left: auto;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: .8125rem;
+      padding: .2rem .65rem;
+      cursor: pointer;
+      transition: color .12s, border-color .12s;
+    }
+    .refresh-btn:hover { color: var(--text); border-color: var(--border2); }
+
+    .auth {
+      margin-bottom: 1.5rem;
+      padding: 1rem 1.1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    .auth p {
+      color: var(--muted);
+      font-size: .8125rem;
+      margin-bottom: .75rem;
+    }
+
+    .auth.err p { color: var(--red); }
+
+    .auth-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      align-items: center;
+    }
+
+    .auth input {
+      flex: 1 1 16rem;
+      min-width: 12rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: .8125rem;
+      padding: .35rem .65rem;
+    }
+
+    .auth input:focus {
+      outline: none;
+      border-color: var(--border2);
+    }
+
+    .auth button {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: .8125rem;
+      padding: .3rem .65rem;
+      cursor: pointer;
+    }
+
+    .auth button:hover { color: var(--text); border-color: var(--border2); }
+
+    /* ── table ── */
+    .table-wrap {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+    }
+
+    thead { background: var(--bg); }
+
+    th {
+      padding: .625rem 1rem;
+      font-size: .6875rem;
+      font-weight: 600;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th.c, td.c { text-align: center; }
+
+    th .th-icon {
+      width: 13px;
+      height: 13px;
+      vertical-align: -2px;
+      margin-right: 5px;
+      opacity: .75;
+    }
+
+    td {
+      padding: .75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: rgba(177,186,196,.04); }
+
+    /* ── issue title cell ── */
+    .issue-row {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-open   { background: var(--green);  box-shadow: 0 0 5px var(--green); }
+    .dot-closed { background: var(--purple); box-shadow: 0 0 5px var(--purple); }
+
+    .issue-name { font-weight: 500; }
+    .issue-num  { color: var(--muted); font-size: .8125rem; white-space: nowrap; }
+
+    /* ── icon link ── */
+    .icon-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background .12s, transform .1s;
+    }
+    .icon-link:hover { background: rgba(177,186,196,.1); transform: scale(1.15); }
+    .icon-link img { width: 20px; height: 20px; display: block; }
+
+    .slot {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: 1px dashed var(--border2);
+      vertical-align: middle;
+    }
+
+    .nope {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      font-size: 17px;
+      opacity: .6;
+      cursor: default;
+      user-select: none;
+    }
+
+    .nope-a { animation: fa 2.8s ease-in-out infinite; }
+    .nope-b { animation: fb 3.1s ease-in-out  .7s infinite; }
+    .nope-c { animation: fc 2.5s ease-in-out 1.4s infinite; }
+
+    @keyframes fa {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-5px); }
+    }
+    @keyframes fb {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50%       { transform: translateY(-4px) rotate(14deg); }
+    }
+    @keyframes fc {
+      0%, 100% { transform: scale(1) translateY(0); }
+      50%       { transform: scale(1.15) translateY(-3px); }
+    }
+
+    .status {
+      display: inline-block;
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .15rem .5rem;
+      border-radius: 999px;
+      border: 1px solid var(--border2);
+      white-space: nowrap;
+    }
+    .status-fresh { color: var(--green); border-color: var(--green); }
+    .status-in-progress { color: var(--amber); border-color: var(--amber); }
+    .status-completed { color: var(--purple); border-color: var(--purple); }
+
+    /* ── states ── */
+    .msg     { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+    .msg.err { color: var(--red); }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Hours</h1>
+  <span class="stats" id="stats"></span>
+  <button class="refresh-btn" type="button" onclick="toggleAuth()">Token</button>
+  <button class="refresh-btn" type="button" onclick="load()">↺ Refresh</button>
+</div>
+
+<div id="auth" class="auth" hidden>
+  <p id="auth-msg">This GitHub repo is private. Paste a token with repo scope, or the output of gh auth token. Stored in localStorage in this browser only.</p>
+  <form id="auth-form" class="auth-row">
+    <input id="token-input" type="password" name="token" autocomplete="off" spellcheck="false" placeholder="ghp_... or gh auth token">
+    <button type="submit">Save token</button>
+    <button type="button" id="clear-token">Clear token</button>
+  </form>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Status</th>
+        <th>Hour</th>
+        <th class="c">
+          <img class="th-icon" src="https://cdn.simpleicons.org/angular/DD0031" alt="">Angular
+        </th>
+        <th class="c">
+          <img class="th-icon" src="https://cdn.simpleicons.org/nextdotjs/ffffff" alt="">Next.js
+        </th>
+        <th class="c">
+          <img class="th-icon" src="https://cdn.simpleicons.org/vite/646cff" alt="">TanStack Start
+        </th>
+        <th class="c">
+          <img class="th-icon" src="https://cdn.simpleicons.org/github/8b949e" alt="">GitHub
+        </th>
+      </tr>
+    </thead>
+    <tbody id="tbody">
+      <tr><td colspan="6" class="msg">Fetching Hours...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  const REPO = 'pterodactor3000/remote-learning';
+  const TOKEN_KEY = 'remote-learning.gh-hours-token';
+
+  const PORTS = {
+    angular:      'http://127.0.0.1:4200',
+    'react-next': 'http://127.0.0.1:3000',
+    'react-vite': 'http://127.0.0.1:3001',
+  };
+
+  const ICON_SRCS = {
+    angular:      'https://cdn.simpleicons.org/angular/DD0031',
+    'react-next': 'https://cdn.simpleicons.org/nextdotjs/ffffff',
+    'react-vite': 'https://cdn.simpleicons.org/vite/646cff',
+    github:       'https://cdn.simpleicons.org/github/ffffff',
+  };
+
+  const ICON_LABELS = {
+    angular:      'Angular',
+    'react-next': 'Next.js',
+    'react-vite': 'TanStack Start',
+  };
+
+  const NOPE = {
+    angular:      { emoji: '🌙', cls: 'nope-a' },
+    'react-next': { emoji: '🪐', cls: 'nope-b' },
+    'react-vite': { emoji: '🌿', cls: 'nope-c' },
+  };
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function getToken() {
+    try {
+      return (localStorage.getItem(TOKEN_KEY) || '').trim();
+    } catch {
+      return '';
+    }
+  }
+
+  function setToken(value) {
+    try {
+      if (value) localStorage.setItem(TOKEN_KEY, value);
+      else localStorage.removeItem(TOKEN_KEY);
+    } catch {
+      throw new Error('Could not store the token in this browser.');
+    }
+  }
+
+  function showAuth(message, isError) {
+    const auth = document.getElementById('auth');
+    const msg = document.getElementById('auth-msg');
+    auth.hidden = false;
+    auth.classList.toggle('err', Boolean(isError));
+    if (message) msg.textContent = message;
+  }
+
+  function hideAuth() {
+    const auth = document.getElementById('auth');
+    auth.hidden = true;
+    auth.classList.remove('err');
+  }
+
+  function toggleAuth() {
+    const auth = document.getElementById('auth');
+    auth.hidden = !auth.hidden;
+  }
+
+  function githubErrorMessage(status, apiMessage, hasToken) {
+    if (status === 404 && !hasToken) {
+      return 'Not Found. This repo is private, so GitHub hides Hours from an unauthenticated browser. Paste a token with repo scope. It stays in this browser localStorage.';
+    }
+    if (status === 401 || status === 403) {
+      return 'GitHub rejected the token. Clear it and paste a new one with repo scope.';
+    }
+    return apiMessage || `GitHub API error ${status}`;
+  }
+
+  function isInScope(body, app) {
+    if (!body) return false;
+    return new RegExp('-\\s*\\[[ xX]\\]\\s*`apps/' + app + '`').test(body);
+  }
+
+  function hasStartedSitting(body) {
+    if (!body) return false;
+    return /-\s*\[[xX]\]\s*`apps\//.test(body);
+  }
+
+  function hourStatus(issue) {
+    if (issue.state === 'closed') return 'completed';
+    if (hasStartedSitting(issue.body)) return 'in progress';
+    return 'fresh';
+  }
+
+  function statusClassName(status) {
+    return 'status-' + status.replaceAll(' ', '-');
+  }
+
+  function playgroundCell(app, issue) {
+    if (!isInScope(issue.body, app)) {
+      const n = NOPE[app];
+      return `<span class="nope ${n.cls}" title="${esc(ICON_LABELS[app] + ' is not in scope')}">${n.emoji}</span>`;
+    }
+    const status = hourStatus(issue);
+    const canLink = status === 'in progress' || status === 'completed';
+    if (!canLink) {
+      return `<span class="slot" title="Hour is fresh"></span>`;
+    }
+    return `<a class="icon-link" href="${PORTS[app]}" target="_blank" rel="noopener"
+        title="${ICON_LABELS[app]}: ${esc(issue.title)}">
+      <img src="${ICON_SRCS[app]}" alt="${ICON_LABELS[app]}" loading="lazy">
+    </a>`;
+  }
+
+  async function load() {
+    const tbody = document.getElementById('tbody');
+    const stats = document.getElementById('stats');
+    tbody.innerHTML = `<tr><td colspan="6" class="msg">Loading...</td></tr>`;
+    stats.textContent = '';
+
+    try {
+      const token = getToken();
+      const headers = { Accept: 'application/vnd.github+json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      const res = await fetch(
+        `https://api.github.com/repos/${REPO}/issues?labels=hour&state=all&per_page=100&sort=created&direction=desc`,
+        { headers, credentials: 'omit' }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        const error = new Error(githubErrorMessage(res.status, data.message, Boolean(token)));
+        error.showAuth = true;
+        throw error;
+      }
+
+      if (!Array.isArray(data)) {
+        throw new Error('Unexpected response shape from GitHub API.');
+      }
+
+      // GitHub issues endpoint returns PRs too; keep only real issues
+      hideAuth();
+
+      const issues = data.filter(i => !i.pull_request);
+      const openCount = issues.filter(i => i.state === 'open').length;
+      stats.textContent = `${openCount} open · ${issues.length} total`;
+
+      if (!issues.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="msg">No Hours yet. Create one with /hour.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = issues.map(issue => `
+        <tr>
+          <td>
+            <span class="status ${statusClassName(hourStatus(issue))}">${hourStatus(issue)}</span>
+          </td>
+          <td>
+            <div class="issue-row">
+              <span class="dot dot-${issue.state}" title="${issue.state}"></span>
+              <span class="issue-name">${esc(issue.title)}</span>
+              <span class="issue-num">#${issue.number}</span>
+            </div>
+          </td>
+          <td class="c">${playgroundCell('angular', issue)}</td>
+          <td class="c">${playgroundCell('react-next', issue)}</td>
+          <td class="c">${playgroundCell('react-vite', issue)}</td>
+          <td class="c">
+            <a class="icon-link" href="${esc(issue.html_url)}" target="_blank" rel="noopener"
+                title="Open #${issue.number} on GitHub">
+              <img src="${ICON_SRCS.github}" alt="GitHub" loading="lazy">
+            </a>
+          </td>
+        </tr>`).join('');
+
+    } catch (err) {
+      const hint = err.message.includes('rate limit')
+        ? '. Wait a minute and refresh'
+        : '';
+      if (err.showAuth || !getToken()) {
+        showAuth(err.message, true);
+      }
+      tbody.innerHTML = `<tr><td colspan="6" class="msg err">${esc(err.message)}${hint}</td></tr>`;
+      stats.textContent = 'Error';
+    }
+  }
+
+  document.getElementById('auth-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const value = document.getElementById('token-input').value.trim();
+    if (!value) {
+      showAuth('Paste a token first.', true);
+      return;
+    }
+    try {
+      setToken(value);
+    } catch (err) {
+      showAuth(err.message, true);
+      return;
+    }
+    document.getElementById('token-input').value = '';
+    load();
+  });
+
+  document.getElementById('clear-token').addEventListener('click', () => {
+    try {
+      setToken('');
+    } catch (err) {
+      showAuth(err.message, true);
+      return;
+    }
+    showAuth('Token cleared. Paste a new one to fetch Hours.', false);
+    load();
+  });
+
+  load();
+</script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Printable four-day Angular, TypeScript, and algorithm interview roadmap"
+    >
+    <title>Four-day interview roadmap</title>
+    <link rel="stylesheet" href="../assets/course.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">Printable reference 0001</p>
+        <h1>Four-day interview roadmap</h1>
+        <p class="meta">
+          Tailored pace: 5 focused hours daily. Use short breaks between blocks.
+          If time is short, do every "must" block and skip optional work.
+        </p>
+      </header>
+
+      <section class="callout">
+        <h2>What the diagnostic changed</h2>
+        <p>
+          The 4/15 baseline does not call for beginner theory. Five years of
+          Angular and ten years of TypeScript mean the fastest route is
+          retrieval from a blank file, manual tracing, and precise spoken
+          explanations. Angular 16 knowledge must also be connected to current
+          signal-based component APIs. A finance setting rewards correctness
+          and explicit validation, but it does not prove that the firm asks
+          finance-specific algorithms.
+        </p>
+      </section>
+
+      <section>
+        <h2>Priority map</h2>
+        <div class="grid">
+          <article class="card must">
+            <h3>Must know</h3>
+            <ul>
+              <li>Components, templates, bindings, inputs, outputs</li>
+              <li>Signals, derived state, dependency injection</li>
+              <li>Reactive forms, routing basics, HTTP flow</li>
+              <li>Change detection, RxJS ownership, cleanup</li>
+              <li>Component and service testing, security defaults</li>
+              <li>
+                Strict TypeScript, narrowing, unions, generics, structural
+                typing
+              </li>
+              <li>
+                Complexity, hash maps, two pointers, sliding windows, stacks,
+                binary search, tree and graph traversal
+              </li>
+            </ul>
+          </article>
+          <article class="card optional">
+            <h3>Optional if baseline is strong</h3>
+            <ul>
+              <li>SSR and hydration details</li>
+              <li>Custom change-detection profiling</li>
+              <li>Advanced RxJS operator design</li>
+              <li>Dynamic component rendering</li>
+              <li>Dynamic programming, tries, union-find</li>
+              <li>Framework source internals</li>
+            </ul>
+          </article>
+        </div>
+        <p>
+          Angular's current official overview centers components, signals,
+          dependency injection, routing, forms, and first-party testing and
+          security guidance
+          <a href="https://angular.dev/overview">[Angular overview]</a>.
+          TypeScript's <code>strict</code> option enables a family of checks
+          that improve correctness guarantees
+          <a href="https://www.typescriptlang.org/tsconfig/strict.html"
+            >[TypeScript strict]</a
+          >.
+        </p>
+      </section>
+
+      <section>
+        <h2>Day 1: restore implementation fluency</h2>
+        <article class="task must">
+          <h3>Must, 4 hours 30 minutes</h3>
+          <ol>
+            <li>
+              Review the scored
+              <a href="../lessons/0001-adaptive-interview-diagnostic.html"
+                >lesson 0001 diagnostic</a
+              >, then write the three concrete failure causes, 20 minutes.
+            </li>
+            <li>
+              Complete
+              <a href="../lessons/0002-angular-typescript-principles.html"
+                >lesson 0002 principles</a
+              >
+              from memory before opening its reference, 25 minutes.
+            </li>
+            <li>
+              Complete
+              <a href="../lessons/0003-rebuild-quote-card.html"
+                >lesson 0003 quote-card rebuild</a
+              >, 35 minutes.
+            </li>
+            <li>
+              TypeScript repair lab, 60 minutes. Parse an
+              <code>unknown</code> trade payload into a discriminated union,
+              remove unsafe assertions, and add an exhaustive switch.
+            </li>
+            <li>
+              Two Sum repair, 60 minutes. State the invariant, write a
+              <code>Map</code> solution, trace duplicate and zero cases on
+              paper, then run it. Record every mismatch between prediction and
+              execution.
+            </li>
+            <li>
+              Blank-file Angular rebuild, 45 minutes. Recreate the quote card
+              without notes using both Angular 16 decorators and current signal
+              APIs.
+            </li>
+            <li>
+              Retrieval close, 25 minutes. Explain each choice aloud without
+              notes, then write the three weakest points.
+            </li>
+          </ol>
+        </article>
+        <article class="task optional">
+          <h3>Optional, 30 minutes</h3>
+          <p>
+            Solve
+            <a href="https://leetcode.com/problems/valid-parentheses/"
+              >Valid Parentheses</a
+            >. State invariant, complexity, and edge cases before coding.
+          </p>
+        </article>
+      </section>
+
+      <section>
+        <h2>Day 2: Angular implementation and design</h2>
+        <article class="task must">
+          <h3>Must, 5 hours</h3>
+          <ol>
+            <li>
+              Build a small order-ticket feature, 120 minutes. Use a strictly
+              typed reactive form, validation, a route parameter, and a service
+              boundary. Keep server data typed as <code>unknown</code> until
+              validated.
+            </li>
+            <li>
+              Add one service test and two component tests, 45 minutes. Cover a
+              valid submission, invalid input, and failed service call.
+            </li>
+            <li>
+              Debug round, 30 minutes. Fix one stale derived-value bug, one
+              subscription leak, and one unsafe template binding.
+            </li>
+            <li>
+              Interview round, 45 minutes. Explain dependency-injection scope,
+              signals versus observables, change detection, and sanitization.
+            </li>
+            <li>
+              Algorithm round, 60 minutes. Solve one hash-map problem and one
+              two-pointer problem. For each, predict output before execution
+              and explain the invariant aloud.
+            </li>
+          </ol>
+        </article>
+        <article class="task optional">
+          <h3>Optional, 30 minutes</h3>
+          <p>
+            Sketch lazy routing and loading/error/empty states. Do not spend
+            time polishing CSS.
+          </p>
+        </article>
+        <p>
+          Angular documents strictly typed reactive forms and their nullability
+          behavior
+          <a href="https://angular.dev/guide/forms/typed-forms"
+            >[typed forms]</a
+          >. Its security guide warns against constructing templates from user
+          input and explains sanitization contexts
+          <a href="https://angular.dev/best-practices/security">[security]</a>.
+        </p>
+      </section>
+
+      <section>
+        <h2>Day 3: algorithms under interview conditions</h2>
+        <article class="task must">
+          <h3>Must, 5 hours</h3>
+          <ol>
+            <li>
+              Pattern recall, 20 minutes. For each row below, name its signal,
+              invariant, and target complexity.
+            </li>
+            <li>
+              Three timed problems, 105 minutes. Use 30 minutes each, then 5
+              minutes to write the missed clue.
+            </li>
+            <li>
+              TypeScript quality pass, 35 minutes. Replace loose objects with
+              clear interfaces, guard empty input, and state mutation choices.
+            </li>
+            <li>
+              Angular recall, 40 minutes. Rebuild yesterday's component API and
+              one test from a blank file.
+            </li>
+            <li>
+              Discussion round, 60 minutes. Answer ten senior-level Angular and
+              TypeScript questions in two minutes each, then repair weak
+              answers from official references.
+            </li>
+            <li>
+              Correction round, 40 minutes. Re-solve the hardest failed problem
+              without looking at the prior code.
+            </li>
+          </ol>
+        </article>
+        <table>
+          <thead>
+            <tr>
+              <th>Pattern</th>
+              <th>Signal in prompt</th>
+              <th>Representative practice</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Hash map or set</td>
+              <td>Fast membership, pair lookup, counts</td>
+              <td>Two Sum</td>
+            </tr>
+            <tr>
+              <td>Two pointers</td>
+              <td>Sorted input, pair or in-place scan</td>
+              <td>Two Sum II</td>
+            </tr>
+            <tr>
+              <td>Sliding window</td>
+              <td>Contiguous range with a changing constraint</td>
+              <td>Longest Substring Without Repeating Characters</td>
+            </tr>
+            <tr>
+              <td>Stack</td>
+              <td>Nested structure, matching, next greater value</td>
+              <td>Valid Parentheses</td>
+            </tr>
+            <tr>
+              <td>Binary search</td>
+              <td>Monotonic condition or sorted search space</td>
+              <td>Binary Search</td>
+            </tr>
+            <tr>
+              <td>BFS or DFS</td>
+              <td>Reachability, tree levels, connected regions</td>
+              <td>Maximum Depth of Binary Tree</td>
+            </tr>
+            <tr>
+              <td>Intervals</td>
+              <td>Overlapping ranges, schedules, consolidation</td>
+              <td>Merge Intervals</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          JavaScript <code>Map</code> and <code>Set</code> provide keyed
+          collections suited to lookup and uniqueness tasks
+          <a
+            href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Keyed_collections"
+            >[MDN keyed collections]</a
+          >. Use the
+          <a href="https://leetcode.com/studyplan/leetcode-75/"
+            >official LeetCode 75 plan</a
+          >
+          as a problem pool, not a four-day completion target.
+        </p>
+      </section>
+
+      <section>
+        <h2>Day 4: simulation, correction, stop</h2>
+        <article class="task must">
+          <h3>Must, 4 hours</h3>
+          <ol>
+            <li>
+              Run a two-hour mock that matches the expected interview. Spend
+              one hour live coding and one hour discussing Angular, TypeScript,
+              testing, architecture, and tradeoffs.
+            </li>
+            <li>
+              Review recording or notes, 30 minutes. Mark only factual gaps,
+              weak explanations, missed cases, and time sinks.
+            </li>
+            <li>
+              Repair the top two gaps with tiny exercises, 45 minutes.
+            </li>
+            <li>
+              Final retrieval sheet, 20 minutes. Write framework, type-system,
+              and algorithm prompts from memory.
+            </li>
+            <li>
+              Environment check and wind-down, 10 minutes. Stop heavy study
+              early enough to sleep.
+            </li>
+          </ol>
+        </article>
+        <article class="task optional">
+          <h3>Optional, 30 minutes</h3>
+          <p>
+            Practice concise questions for the interviewer about Angular
+            version, testing culture, frontend architecture, and correctness
+            requirements.
+          </p>
+        </article>
+      </section>
+
+      <section>
+        <h2>Interview loop</h2>
+        <ol>
+          <li>Restate inputs, outputs, constraints, and ambiguous cases.</li>
+          <li>Give a simple approach before optimizing.</li>
+          <li>Name the invariant and choose data structures.</li>
+          <li>Code in small testable steps while narrating decisions.</li>
+          <li>Test empty, single, duplicate, boundary, and failure cases.</li>
+          <li>State time and space complexity.</li>
+        </ol>
+        <p class="small">
+          Ask your teacher follow-up questions whenever a term, tradeoff, or
+          exercise remains unclear.
+        </p>
+      </section>
+
+      <nav aria-label="Course navigation">
+        <a href="../lessons/0001-adaptive-interview-diagnostic.html"
+          >Start lesson 0001</a
+        >
+        <a href="angular-typescript-principles.html"
+          >Review Angular and TypeScript principles</a
+        >
+        <a href="../RESOURCES.md">Open source list</a>
+      </nav>
+    </main>
+  </body>
+</html>

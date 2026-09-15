@@ -42,15 +42,32 @@ def run_status(repo_root: Path) -> int:
     for mat in materials:
         n = _count_files(repo_root / mat)
         print(f"  {mat:14} {n}")
+        # Per-source owned copies under this material
+        mat_root = repo_root / mat
+        if mat_root.is_dir():
+            for child in sorted(mat_root.iterdir()):
+                if child.is_dir() and child.name != ".git":
+                    cn = _count_files(child)
+                    if cn or (child / ".gitkeep").exists() is False:
+                        # show source subdirs with any files
+                        if cn > 0:
+                            print(f"    └─ {child.name:12} {cn}")
     print(f"  {staging:14} {_count_files(repo_root / staging)}")
 
     active = enabled_sources(cfg)
     deferred = deferred_sources(cfg)
     print(f"\nsources: {len(active)} enabled, {len(deferred)} deferred")
     for s in active:
-        print(f"  [on]  {s['name']:24} {s.get('type')} {s.get('url') or s.get('path') or s.get('id') or ''}")
+        mat = s.get("material") or "-"
+        print(
+            f"  [on]  {s['name']:24} {s.get('type'):8} "
+            f"-> {mat:12} {s.get('url') or s.get('path') or s.get('id') or ''}"
+        )
     for s in deferred:
-        print(f"  [off] {s['name']:24} {s.get('type')} {s.get('note') or s.get('id') or s.get('path') or ''}")
+        print(
+            f"  [off] {s['name']:24} {s.get('type')} "
+            f"{s.get('note') or s.get('id') or s.get('path') or ''}"
+        )
 
     ingest_cfg = cfg.get("ingest") or {}
     state_file = repo_root / (ingest_cfg.get("state_file") or ".archives/last_ingest.json")
@@ -61,7 +78,12 @@ def run_status(repo_root: Path) -> int:
             print(f"  finished_at: {state.get('finished_at', '?')}")
             for r in state.get("results") or []:
                 mark = "ok" if r.get("ok") else "FAIL"
-                print(f"  - [{mark}] {r.get('name')}: {r.get('detail', '')[:80]}")
+                detail = r.get("detail", "")[:60]
+                promo = r.get("promote")
+                line = f"  - [{mark}] {r.get('name')}: {detail}"
+                print(line)
+                if promo:
+                    print(f"           promote: {str(promo)[:70]}")
         except json.JSONDecodeError:
             print("  (state file unreadable)")
     else:
