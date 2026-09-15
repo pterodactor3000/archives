@@ -56,13 +56,15 @@ Always:
 | [learning](https://github.com/pterodactor3000/learning) | `ingest/learning` | `courses/learning/` |
 | [remote-learning](https://github.com/pterodactor3000/remote-learning) | `ingest/remote-learning` | `courses/remote-learning/` |
 | [stack-notes](https://github.com/pterodactor3000/stack-notes) | `ingest/stack-notes` | `notes/stack-notes/` |
+| empty-window canvases (local) | `ingest/empty-window-canvases` | `notes/empty-window-canvases/` |
 
 Each enabled `git` / `local` source must set `material:` to one of `notes` \| `cheatsheets` \| `courses` \| `drills`.
+
+Local canvases path (on cogitator): `/home/pterodactorius/.cursor/projects/empty-window/canvases/` — `node_modules` excluded on promote.
 
 **Deferred / manual** (`enabled: false` until you flip them):
 
 - Cursor codebases: `pterodactor/node-sql-refresher`, `pterodactor/agent-atlas`
-- Local: `/home/pterodactorius/.cursor/projects/empty-window/canvases/`
 
 ### Ingest + promote
 
