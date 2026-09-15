@@ -4,14 +4,14 @@ Local **learning vault** for programming / software-engineering study materials.
 
 Owned copies only. No clever sync magic. Subtract before add. Source repos are never deleted.
 
-**Catalog:** see **[INDEX.md](INDEX.md)** (entry-level: each repo + each canvas) or the hostable front page **[docs/index.html](docs/index.html)**.
+**Catalog:** see **[INDEX.md](INDEX.md)** (entry-level: each repo + each canvas) or the hostable Jekyll site **[docs/index.md](docs/index.md)**.
 
 ## Layout
 
 ```
 README.md
 INDEX.md               # entry-level catalog: repos + canvases (regenerate: archives index)
-docs/                  # hostable static site (GitHub Pages from /docs)
+docs/                  # Jekyll Pages site (hacker theme; GitHub Pages from /docs)
 archives.yaml          # sources + vault policy
 bin/archives           # single CLI entrypoint
 archives_lib/          # small Python package behind the CLI
@@ -45,7 +45,7 @@ Requires Python 3.10+ and `PyYAML` (`pip install pyyaml`). Git + `gh` for HTTPS 
 | `archives ingest [--dry-run]` | Clone/update enabled git sources into `ingest/`, then **promote** owned copies into `{material}/{source_name}/`. Deferred sources stay skipped. |
 | `archives organize [--dry-run]` | Light normalize (e.g. trailing whitespace on `.md`) under material dirs |
 | `archives status` | Config validity, file counts (incl. per-source material subdirs), enabled/deferred sources, last ingest state |
-| `archives index` | Regenerate entry-level [`INDEX.md`](INDEX.md) + hostable [`docs/`](docs/index.html) (repos + canvases) |
+| `archives index` | Regenerate entry-level [`INDEX.md`](INDEX.md) + Jekyll Markdown under [`docs/`](docs/index.md) (repos + canvases) |
 
 Always:
 
@@ -84,23 +84,28 @@ Local canvases path (on cogitator): `/home/pterodactorius/.cursor/projects/empty
 `--dry-run` covers both stage and promote (no writes, no state file).
 
 
-## Host remotely (static / GitHub Pages)
+## Host remotely (GitHub Pages + Jekyll)
 
-The vault front page lives under `docs/` so you can browse entries without Cursor.
+The vault front page lives under `docs/` as a **Jekyll** site using GitHub’s **hacker** theme (`remote_theme: pages-themes/hacker@v0.2.0`). Project site `baseurl` is `/archives` (URL path when published as `username.github.io/archives`).
 
 1. Push this repo (or merge to `main`).
 2. GitHub → **Settings → Pages** → Deploy from branch **`main`** / folder **`/docs`**.
-3. Open the Pages URL; `docs/index.html` is the front page. Entry cards use relative links under `docs/entries/`.
+3. Open `https://<user>.github.io/archives/` — `docs/index.md` is the front page. Entry pages live under `docs/entries/` (Markdown + front matter). Canvas stubs link to GitHub blob URLs for source files outside `/docs`.
 
-**Note:** private-repo GitHub Pages often needs GitHub Pro (or a public repo). Alternatives:
+**Note:** private-repo GitHub Pages often needs GitHub Pro (or a public repo).
+
+### Local preview (optional)
+
+`docs/Gemfile` pins `github-pages` for local builds:
 
 ```bash
-# from vault root — serve only the static site
-python3 -m http.server -d docs 8765
-# then open http://localhost:8765/
+cd docs
+bundle install
+bundle exec jekyll serve --baseurl /archives
+# open http://localhost:4000/archives/
 ```
 
-Any static host that serves the `docs/` folder works the same. Do not rely on a GitHub Actions workflow here (token may lack `workflow` scope); Pages “Deploy from a branch” is enough.
+If Ruby/`bundle` is unavailable, skip local preview — GitHub Pages will build on push.
 
 Regenerate after ingest:
 
