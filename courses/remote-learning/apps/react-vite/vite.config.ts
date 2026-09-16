@@ -1,13 +1,14 @@
 import { defineConfig } from 'vite'
-import { devtools } from '@tanstack/devtools-vite'
-
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
-
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import viteReact, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 
+/** Vault static hosting on GitHub Pages (docs/apps/remote-learning/react-vite). */
+const vaultBase = '/archives/apps/remote-learning/react-vite/'
+
 const config = defineConfig({
+  base: vaultBase,
   resolve: { tsconfigPaths: true },
   server: {
     host: '127.0.0.1',
@@ -15,9 +16,11 @@ const config = defineConfig({
     strictPort: true,
   },
   plugins: [
-    devtools(),
+    tanstackRouter({
+      target: 'react',
+      autoCodeSplitting: true,
+    }),
     tailwindcss(),
-    tanstackStart(),
     viteReact(),
     babel({ presets: [reactCompilerPreset()] }),
   ],

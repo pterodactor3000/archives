@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Angular and TypeScript interview principles</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Rapid interview reference</p>
+      <h1>Angular and TypeScript principles</h1>
+      <p>Use this sheet to rehearse decisions, not definitions. For each topic, explain the boundary, name the tradeoff, then give the smallest believable example.</p>
+      <nav aria-label="Page sections">
+        <a href="#mental-model">Mental model</a>
+        <a href="#angular">Angular</a>
+        <a href="#typescript">TypeScript</a>
+        <a href="#runtime">JavaScript runtime</a>
+        <a href="#questions">Question bank</a>
+        <a href="#sources">Sources</a>
+      </nav>
+      <button type="button" onclick="window.print()">Print this reference</button>
+    </header>
+
+    <section id="mental-model">
+      <h2>Start with the right layer</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>Angular</h3>
+          <p>A runtime framework. It creates components, resolves dependencies, renders templates, reacts to state, and manages navigation and forms.</p>
+        </article>
+        <article class="card">
+          <h3>TypeScript</h3>
+          <p>A compile-time type system and toolchain. It checks source code, then emits JavaScript. Most types do not exist after compilation.</p>
+        </article>
+        <article class="card">
+          <h3>JavaScript</h3>
+          <p>The runtime language. Network data, events, promises, object mutation, and thrown errors happen here. TypeScript cannot validate an API response by itself.</p>
+        </article>
+      </div>
+      <aside class="callout" aria-label="Interview answer pattern">
+        <p><strong>Strong interview answer:</strong> "TypeScript can prove how checked code uses a value. At an external boundary I still validate the JavaScript value at runtime."</p>
+      </aside>
+    </section>
+
+    <section id="angular">
+      <h2>Angular principles</h2>
+
+      <article class="card">
+        <h3>1. Put a boundary around one UI responsibility</h3>
+        <p>A component should own one coherent piece of UI and its presentation behavior. Pass data in and report user intent out. Keep API calls and shared business state in injected services when several components need them. Do not split every element into a component. Split when a part has its own behavior, reuse, test seam, or change rate. Angular's style guide recommends focused components. <a href="https://angular.dev/style-guide#keep-components-focused-on-presentation">Angular style guide</a></p>
+        <pre><code>@Component({
+  selector: 'app-price-card',
+  template: `
+    &lt;button type="button" (click)="selected.emit(product().id)">
+      {{ product().name }}: {{ product().price | currency }}
+    &lt;/button>
+  `,
+  imports: [CurrencyPipe],
+})
+export class PriceCard {
+  readonly product = input.required&lt;Product>();
+  readonly selected = output&lt;string>();
+}</code></pre>
+        <p><strong>Tradeoff:</strong> A smart page can coordinate loading and routing while small child components stay reusable. Too much coordination in children couples them to one screen. Too many tiny children make data flow noisy.</p>
+      </article>
+
+      <article class="card">
+        <h3>2. Inputs are data; outputs are events</h3>
+        <p>The current function APIs return an input signal and an output emitter. Required inputs move a missing value from a runtime surprise to a template error. Outputs should describe what happened, such as <code>saved</code>, rather than command a parent, such as <code>closeDialogNow</code>. Decorator APIs <code>@Input</code> and <code>@Output</code> remain supported, but the current style guide prefers <code>input()</code> and <code>output()</code>. <a href="https://angular.dev/guide/components/inputs">Inputs</a>, <a href="https://angular.dev/guide/components/outputs">outputs</a>, <a href="https://angular.dev/style-guide#use-signal-inputs-and-outputs">style guidance</a></p>
+        <pre><code>readonly accountId = input.required&lt;string>();
+readonly limit = input(20);
+readonly refreshed = output&lt;number>();
+
+refresh(): void {
+  this.refreshed.emit(Date.now());
+}</code></pre>
+        <p><strong>Interview trap:</strong> An output is not DOM event bubbling. A parent listens on the component element.</p>
+      </article>
+
+      <article class="card">
+        <h3>3. Dependency injection controls construction and scope</h3>
+        <p>Ask Angular for a dependency instead of constructing it inside the consumer. This separates policy from use, supports alternate implementations, and makes tests easier. Provider placement controls lifetime. A service with <code>providedIn: 'root'</code> normally has application-wide scope. Route or component providers create narrower instances. <a href="https://angular.dev/guide/di">Dependency injection</a>, <a href="https://angular.dev/guide/di/hierarchical-dependency-injection">hierarchical injectors</a></p>
+        <pre><code>@Injectable({ providedIn: 'root' })
+export class ExchangeRateService {
+  private readonly http = inject(HttpClient);
+
+  getRate(pair: string): Observable&lt;Rate> {
+    return this.http.get&lt;Rate>(`/api/rates/${pair}`);
+  }
+}
+
+export class QuotePage {
+  private readonly rates = inject(ExchangeRateService);
+}</code></pre>
+        <p><strong>Tradeoff:</strong> Root scope is convenient for stateless infrastructure and truly shared state. Feature scope avoids accidental cross-feature state and releases the instance with its injector.</p>
+      </article>
+
+      <article class="card">
+        <h3>4. Choose state by shape: signal, Observable, or plain value</h3>
+        <p>Signals fit synchronous state that the UI reads now. Use <code>computed()</code> for derived values and <code>effect()</code> mainly to synchronize with an external system. Do not use effects to copy state that can be derived. <a href="https://angular.dev/guide/signals">Signals guide</a></p>
+        <pre><code>readonly quantity = signal(1);
+readonly unitPrice = signal(12.50);
+readonly total = computed(() => this.quantity() * this.unitPrice());
+
+increment(): void {
+  this.quantity.update(value => value + 1);
+}</code></pre>
+        <p>Observables fit values over time, especially HTTP results, router events, user input streams, cancellation, and operator pipelines. A subscription starts an Observable execution and returns a <code>Subscription</code> that can cancel it. <a href="https://rxjs.dev/guide/observable">RxJS Observable guide</a>, <a href="https://rxjs.dev/guide/subscription">subscriptions</a></p>
+        <pre><code>readonly results$ = this.query.valueChanges.pipe(
+  debounceTime(250),
+  distinctUntilChanged(),
+  switchMap(term => this.search.find(term)),
+  catchError(() => of([])),
+);</code></pre>
+        <p><strong>Tradeoff:</strong> Signals make local synchronous state direct. RxJS is better when time, cancellation, errors, or several async sources are part of the problem. Converting everything between both models adds concepts without adding value.</p>
+      </article>
+
+      <article class="card">
+        <h3>5. OnPush is a checking strategy, not immutability enforcement</h3>
+        <p><code>OnPush</code> lets Angular skip eligible component subtrees. New inputs and events handled in a subtree are common reasons Angular checks it. Reading a signal in an OnPush template also lets Angular track that dependency and mark the component when it changes. Mutating an existing input object keeps the same reference, so Angular may not detect the intended change. Prefer immutable updates. <a href="https://angular.dev/best-practices/skipping-subtrees">Skipping component subtrees</a>, <a href="https://angular.dev/guide/signals#reading-signals-in-onpush-components">signals in OnPush components</a></p>
+        <pre><code>@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `&lt;p>{{ account().name }}&lt;/p>`,
+})
+export class AccountSummary {
+  readonly account = input.required&lt;Account>();
+}
+
+// Parent: new reference, clear state transition
+this.account.update(value => ({ ...value, name: 'Ada' }));</code></pre>
+        <p><strong>Interview trap:</strong> OnPush does not mean "render once" and does not make mutable objects safe.</p>
+      </article>
+
+      <article class="card">
+        <h3>6. Keep templates declarative</h3>
+        <p>Templates bind component state to DOM properties, attributes, classes, styles, and events. Put cheap presentation expressions in the template. Move multi-step decisions into named methods or computed state. Use Angular control flow such as <code>@if</code> and <code>@for</code>, and give repeated records a stable tracking key. <a href="https://angular.dev/guide/templates">Templates guide</a>, <a href="https://angular.dev/guide/templates/control-flow">control flow</a></p>
+        <pre><code>@if (trades().length === 0) {
+  &lt;p>No trades yet.&lt;/p>
+} @else {
+  @for (trade of trades(); track trade.id) {
+    &lt;app-trade-row [trade]="trade" />
+  }
+}</code></pre>
+        <p><strong>Tradeoff:</strong> A method call in a template is valid, but Angular may call it often. Precompute expensive work and keep getters pure.</p>
+      </article>
+
+      <article class="card">
+        <h3>7. Pick a form model that matches the job</h3>
+        <p>Reactive forms define the form model in TypeScript. They suit dynamic validation, larger forms, and direct unit tests. Template-driven forms put more form behavior in the template and suit small, simple forms. Angular documents both approaches. <a href="https://angular.dev/guide/forms">Forms overview</a>, <a href="https://angular.dev/guide/forms/reactive-forms">reactive forms</a></p>
+        <pre><code>readonly transferForm = new FormGroup({
+  amount: new FormControl(0, {
+    nonNullable: true,
+    validators: [Validators.required, Validators.min(0.01)],
+  }),
+  reference: new FormControl('', { nonNullable: true }),
+});
+
+submit(): void {
+  if (this.transferForm.invalid) return;
+  this.transfer.create(this.transferForm.getRawValue());
+}</code></pre>
+        <p><strong>Tradeoff:</strong> Reactive forms cost more setup but make the state model explicit. Template-driven forms are shorter until validation and cross-field behavior grow.</p>
+      </article>
+
+      <article class="card">
+        <h3>8. Routes map URLs to screen composition</h3>
+        <p>Routes connect a path to a component, redirect, guard, resolver, or lazy-loaded feature. Prefer lazy loading at feature boundaries. Treat guards as navigation controls, not authorization. A user can alter client code, so the server must enforce access. <a href="https://angular.dev/guide/routing">Routing guide</a>, <a href="https://angular.dev/guide/routing/define-routes">route definitions</a>, <a href="https://angular.dev/guide/routing/route-guards#critical-never-rely-on-client-side-guards-as-the-sole-source-of-access-control">guard security warning</a></p>
+        <pre><code>export const routes: Routes = [
+  {
+    path: 'portfolio/:id',
+    loadComponent: () =>
+      import('./portfolio-page').then(module => module.PortfolioPage),
+  },
+  { path: '', pathMatch: 'full', redirectTo: 'portfolio/main' },
+];</code></pre>
+        <p><strong>Tradeoff:</strong> A resolver can avoid a half-loaded screen, but it delays navigation. Loading inside the component can show the route sooner, but the component must model loading and failure.</p>
+      </article>
+
+      <article class="card">
+        <h3>9. Lifecycle hooks are for lifecycle work</h3>
+        <p>Use <code>ngOnInit</code> for initialization that depends on Angular-provided inputs. Use <code>ngOnChanges</code> when behavior depends on input transitions. Use <code>afterNextRender</code> for DOM work after rendering. Keep constructors cheap. <a href="https://angular.dev/guide/components/lifecycle">Component lifecycle</a></p>
+        <p>Prefer template consumption with <code>AsyncPipe</code> when practical. It unsubscribes when the component is destroyed. For an imperative subscription, <code>takeUntilDestroyed()</code> completes the stream with the current destruction context. <a href="https://angular.dev/api/common/AsyncPipe">AsyncPipe</a>, <a href="https://angular.dev/api/core/rxjs-interop/takeUntilDestroyed">takeUntilDestroyed</a></p>
+        <pre><code>private readonly destroyRef = inject(DestroyRef);
+
+ngOnInit(): void {
+  this.prices.liveUpdates()
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe(price => this.latestPrice.set(price));
+}</code></pre>
+        <p><strong>Interview trap:</strong> Not every Observable needs manual cleanup. Finite streams complete. Template-managed subscriptions and destruction-aware operators remove common leaks.</p>
+      </article>
+
+      <article class="card">
+        <h3>10. Standalone components make dependencies local</h3>
+        <p>Current Angular components are standalone by default. A component lists the directives, pipes, and child components its template uses in <code>imports</code>. Existing NgModule applications remain valid and can adopt standalone code gradually. <a href="https://angular.dev/guide/components/importing">Importing and using components</a></p>
+        <pre><code>@Component({
+  selector: 'app-trade-page',
+  imports: [RouterLink, DatePipe, TradeTable],
+  templateUrl: './trade-page.html',
+})
+export class TradePage {}</code></pre>
+        <p><strong>Tradeoff:</strong> Local imports make dependencies visible and work well with lazy loading. Shared import arrays can reduce repetition, but broad bundles can hide what a template actually needs.</p>
+      </article>
+
+      <article class="card">
+        <h3>11. Test behavior at the cheapest useful boundary</h3>
+        <p>Test pure TypeScript logic without Angular. Use <code>TestBed</code> when Angular must create components, resolve providers, or render templates. Assert visible behavior and emitted intent, not private fields. Replace network dependencies with Angular's HTTP testing support. <a href="https://angular.dev/guide/testing">Testing guide</a>, <a href="https://angular.dev/guide/http/testing">HTTP testing</a></p>
+        <pre><code>it('emits the selected product id', () => {
+  const fixture = TestBed.createComponent(PriceCard);
+  fixture.componentRef.setInput('product', PRODUCT);
+  const selectedIds: string[] = [];
+  fixture.componentInstance.selected.subscribe(id => selectedIds.push(id));
+
+  fixture.detectChanges();
+  fixture.nativeElement.querySelector('button').click();
+
+  expect(selectedIds).toEqual([PRODUCT.id]);
+});</code></pre>
+        <p><strong>Tradeoff:</strong> Unit tests are fast and precise. Integration tests catch template and provider wiring mistakes. A healthy suite uses both, with fewer expensive end-to-end tests for critical journeys.</p>
+      </article>
+    </section>
+
+    <section id="typescript">
+      <h2>TypeScript principles</h2>
+
+      <article class="card">
+        <h3>1. Compatibility is usually structural</h3>
+        <p>If a value has the required shape, it can often be used regardless of its declared name. Extra properties on an existing variable are compatible, while an object literal gets an extra-property check that catches likely mistakes. <a href="https://www.typescriptlang.org/docs/handbook/type-compatibility.html">Type compatibility</a>, <a href="https://www.typescriptlang.org/docs/handbook/2/objects.html#excess-property-checks">excess property checks</a></p>
+        <pre><code>interface Named {
+  name: string;
+}
+
+const account = { name: 'Ada', balance: 100 };
+const named: Named = account; // compatible by shape
+
+// const typo: Named = { name: 'Ada', balence: 100 };
+// Error: object literal contains an unknown property.</code></pre>
+        <p><strong>Tradeoff:</strong> Structural typing makes composition easy. It does not create domain identity. Use branded values or classes with private members when mixing structurally identical IDs would be dangerous.</p>
+      </article>
+
+      <article class="card">
+        <h3>2. Interface or type alias is mostly about intent</h3>
+        <p>Both can describe object shapes. Interfaces support declaration merging and are natural for extensible object contracts. Type aliases can also name unions, tuples, primitives, mapped types, and intersections. <a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#interfaces">Interfaces</a>, <a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-aliases">type aliases</a></p>
+        <pre><code>interface Account {
+  id: string;
+  balance: number;
+}
+
+type LoadState =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'loaded'; account: Account }
+  | { status: 'failed'; message: string };</code></pre>
+        <p><strong>Interview answer:</strong> Prefer a project convention. Choose interface for an object contract that consumers may extend or merge. Choose a type alias when the model needs a union or type-level composition.</p>
+      </article>
+
+      <article class="card">
+        <h3>3. Unions model alternatives; narrowing proves which one</h3>
+        <p>A discriminated union puts a shared literal field on each valid state. A switch on that field narrows the rest of the object. This prevents impossible combinations such as an error and loaded data at the same time. <a href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions">Discriminated unions</a></p>
+        <pre><code>function renderState(state: LoadState): string {
+  switch (state.status) {
+    case 'idle': return 'Ready';
+    case 'loading': return 'Loading';
+    case 'loaded': return `Balance: ${state.account.balance}`;
+    case 'failed': return state.message;
+    default: return assertNever(state);
+  }
+}
+
+function assertNever(value: never): never {
+  throw new Error(`Unhandled state: ${JSON.stringify(value)}`);
+}</code></pre>
+        <p><strong>Tradeoff:</strong> Optional fields look shorter but let invalid combinations through. A union takes more lines and gives exhaustive control flow.</p>
+      </article>
+
+      <article class="card">
+        <h3>4. Generics preserve a relationship between types</h3>
+        <p>A useful generic connects input and output types. A type parameter used once often adds no information. Add constraints only for operations the implementation needs. <a href="https://www.typescriptlang.org/docs/handbook/2/generics.html">Generics</a></p>
+        <pre><code>interface Page&lt;TItem> {
+  items: TItem[];
+  nextCursor: string | null;
+}
+
+function first&lt;TItem>(page: Page&lt;TItem>): TItem | undefined {
+  return page.items[0];
+}
+
+function getId&lt;TItem extends { id: string }>(item: TItem): string {
+  return item.id;
+}</code></pre>
+        <p><strong>Interview trap:</strong> Do not reach for a generic when a concrete type or union tells the truth more clearly.</p>
+      </article>
+
+      <article class="card">
+        <h3>5. Use unknown at untrusted boundaries; avoid any</h3>
+        <p><code>any</code> opts out of type checking and spreads unsafety through callers. <code>unknown</code> accepts any value but requires narrowing before use. That makes it a good starting type for caught errors, parsed JSON, storage, and third-party messages. <a href="https://www.typescriptlang.org/docs/handbook/2/functions.html#unknown">unknown</a></p>
+        <pre><code>interface Quote {
+  symbol: string;
+  price: number;
+}
+
+function isQuote(value: unknown): value is Quote {
+  if (typeof value !== 'object' || value === null) return false;
+  const record = value as Record&lt;string, unknown>;
+  return typeof record.symbol === 'string'
+    &amp;&amp; typeof record.price === 'number';
+}
+
+async function loadQuote(): Promise&lt;Quote> {
+  const response = await fetch('/api/quote');
+  if (!response.ok) throw new Error(`Quote request failed: ${response.status}`);
+  const data: unknown = await response.json();
+  if (!isQuote(data)) throw new Error('Quote response has an invalid shape');
+  return data;
+}</code></pre>
+        <p><strong>Key distinction:</strong> A type assertion such as <code>data as Quote</code> performs no runtime check. A guard inspects the JavaScript value.</p>
+      </article>
+
+      <article class="card">
+        <h3>6. Describe objects precisely</h3>
+        <p>Use named properties for known fields. Use an index signature or <code>Record</code> only when keys are genuinely dynamic. Avoid the broad <code>object</code> type when callers need known members. Optional means the property may be absent, which differs from a required property whose value can be <code>undefined</code>. <a href="https://www.typescriptlang.org/docs/handbook/2/objects.html">Object types</a></p>
+        <pre><code>interface Position {
+  instrumentId: string;
+  quantity: number;
+  note?: string;
+}
+
+const pricesByInstrument: Record&lt;string, number> = {
+  AAPL: 210.20,
+  MSFT: 505.10,
+};</code></pre>
+      </article>
+
+      <article class="card">
+        <h3>7. readonly blocks writes through a type, not runtime mutation</h3>
+        <p><code>readonly</code> catches assignments during type checking. It does not freeze the JavaScript object, and it is shallow unless nested members are also readonly. Use readonly inputs and immutable update patterns to make ownership clear. Use <code>Object.freeze</code> only when runtime freezing is required. <a href="https://www.typescriptlang.org/docs/handbook/2/objects.html#readonly-properties">Readonly properties</a></p>
+        <pre><code>interface Holding {
+  readonly id: string;
+  readonly lots: readonly number[];
+}
+
+function addLot(holding: Holding, quantity: number): Holding {
+  return { ...holding, lots: [...holding.lots, quantity] };
+}</code></pre>
+      </article>
+
+      <article class="card">
+        <h3>8. Utility types transform an existing contract</h3>
+        <p>Utility types reduce duplicate declarations. Use them when the new type truly follows the source type. Name a separate interface when the API has different semantics or will evolve independently. <a href="https://www.typescriptlang.org/docs/handbook/utility-types.html">Utility types</a></p>
+        <pre><code>interface User {
+  id: string;
+  name: string;
+  role: 'viewer' | 'trader';
+}
+
+type UserPatch = Partial&lt;Pick&lt;User, 'name' | 'role'>>;
+type PublicUser = Omit&lt;User, 'role'>;
+type UsersById = Record&lt;string, User>;</code></pre>
+        <p><strong>Tradeoff:</strong> <code>Partial&lt;User></code> is handy for patch data, but it is often too permissive for creation data because it makes every field optional.</p>
+      </article>
+
+      <article class="card">
+        <h3>9. Classes carry runtime behavior; access modifiers mostly guide TypeScript</h3>
+        <p>Classes produce JavaScript constructor functions and prototypes. <code>public</code>, <code>protected</code>, and TypeScript <code>private</code> are checked by TypeScript. JavaScript <code>#private</code> fields enforce privacy at runtime. <code>implements</code> checks the instance contract but does not change emitted behavior. <a href="https://www.typescriptlang.org/docs/handbook/2/classes.html">Classes</a>, <a href="https://www.typescriptlang.org/docs/handbook/2/classes.html#caveats">runtime caveats</a></p>
+        <pre><code>class Ledger {
+  readonly #entries: number[] = [];
+
+  constructor(public readonly accountId: string) {}
+
+  add(amount: number): void {
+    this.#entries.push(amount);
+  }
+
+  get balance(): number {
+    return this.#entries.reduce((sum, value) => sum + value, 0);
+  }
+}</code></pre>
+        <p><strong>Tradeoff:</strong> Use a class when identity, invariants, encapsulated mutable state, or runtime construction matters. Use plain objects and functions for simple data transformations.</p>
+      </article>
+
+      <article class="card">
+        <h3>10. Know what survives compilation</h3>
+        <p>Interfaces, type aliases, generic arguments, and most annotations disappear from emitted JavaScript. Classes, enums, imported values, and JavaScript checks can exist at runtime. TypeScript's structural types are erased, so <code>value instanceof SomeInterface</code> is impossible. <a href="https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes-oop.html#erased-structural-types">Erased structural types</a></p>
+        <pre><code>interface Payment {
+  amount: number;
+}
+
+function total(payment: Payment): number {
+  return payment.amount;
+}
+
+// Emitted JavaScript is effectively:
+// function total(payment) { return payment.amount; }</code></pre>
+      </article>
+    </section>
+
+    <section id="runtime">
+      <h2>Runtime checks TypeScript cannot replace</h2>
+      <ul class="checklist">
+        <li><input type="checkbox"> Check HTTP status and handle timeouts, cancellation, and malformed bodies.</li>
+        <li><input type="checkbox"> Validate unknown data before assigning it a domain type.</li>
+        <li><input type="checkbox"> Enforce authorization and business rules on the server.</li>
+        <li><input type="checkbox"> Remember that <code>readonly</code> and <code>private</code> may be compile-time restrictions only.</li>
+        <li><input type="checkbox"> Test Angular rendering and DI wiring because types cannot prove runtime configuration.</li>
+      </ul>
+    </section>
+
+    <section id="questions">
+      <h2>High-yield interview questions</h2>
+      <ol>
+        <li>Where would you place data loading, shared state, and presentational formatting in an Angular feature? Why?</li>
+        <li>When would you choose a signal over an Observable? Give one case where each is clearly better.</li>
+        <li>What can cause an OnPush component to update, and why can object mutation cause stale UI?</li>
+        <li>How do provider scopes change service lifetime and state sharing?</li>
+        <li>Reactive or template-driven forms for a multi-step transfer form? Defend the choice.</li>
+        <li>What work belongs in a route resolver, and when would component-level loading be better?</li>
+        <li>What subscription cleanup does <code>AsyncPipe</code> provide? When would you use <code>takeUntilDestroyed()</code>?</li>
+        <li>Why can two unrelated TypeScript types be compatible?</li>
+        <li>When is a type alias required instead of an interface?</li>
+        <li>How does a discriminated union prevent impossible UI states?</li>
+        <li>Why is <code>unknown</code> safer than <code>any</code> for API data?</li>
+        <li>Which TypeScript features survive at runtime, and how would you prove an API payload is valid?</li>
+      </ol>
+      <aside class="callout" aria-label="Fast practice method">
+        <p><strong>Fast practice:</strong> Pick four questions. Answer each aloud in 60 seconds. Use this shape: decision, reason, example, tradeoff.</p>
+      </aside>
+    </section>
+
+    <section id="sources">
+      <h2>Primary sources</h2>
+      <p>Start with these official docs when an answer needs more depth.</p>
+      <ul>
+        <li><a href="https://angular.dev/guide/components">Angular components</a></li>
+        <li><a href="https://angular.dev/guide/di">Angular dependency injection</a></li>
+        <li><a href="https://angular.dev/guide/signals">Angular signals</a></li>
+        <li><a href="https://angular.dev/best-practices/skipping-subtrees">Angular OnPush and skipped subtrees</a></li>
+        <li><a href="https://angular.dev/guide/forms">Angular forms</a></li>
+        <li><a href="https://angular.dev/guide/routing">Angular routing</a></li>
+        <li><a href="https://angular.dev/guide/testing">Angular testing</a></li>
+        <li><a href="https://www.typescriptlang.org/docs/handbook/intro.html">TypeScript handbook</a></li>
+        <li><a href="https://rxjs.dev/guide/observable">RxJS Observable guide</a></li>
+      </ul>
+      <p class="small">Docs checked against current official Angular, TypeScript, and RxJS material on 28 August 2026. Ask your teacher about any answer you cannot explain without reading the sheet.</p>
+    </section>
+  </main>
+</body>
+</html>

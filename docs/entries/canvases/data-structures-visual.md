@@ -1,14 +1,13 @@
 ---
 layout: page
-title: "Data Structures Visual"
+title: "Advanced structures"
 ---
+
+**Live stand-in:** [apps/canvases/data-structures-visual.html](../../apps/canvases/data-structures-visual.html)
 
 **Canvas** · `notes/empty-window-canvases/data-structures-visual.canvas.tsx`
 
-`.canvas.tsx` is Cursor canvas source — open it in Cursor to view/edit.
-This page is a stub for remote browsing of the vault catalog.
-Source files live outside `/docs`, so GitHub Pages does not publish them;
-use the blob links below.
+Static HTML stand-in for Pages (not the Cursor canvas runtime).
 
 - Source: [`notes/empty-window-canvases/data-structures-visual.canvas.tsx`](https://github.com/pterodactor3000/archives/blob/main/notes/empty-window-canvases/data-structures-visual.canvas.tsx)
 

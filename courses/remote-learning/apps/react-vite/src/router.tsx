@@ -1,8 +1,9 @@
 import { createRouter as createTanStackRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
-
-import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { getContext } from './integrations/tanstack-query/root-provider'
+
+/** Must match Vite `base` (no trailing slash for TanStack Router basepath). */
+const vaultBasepath = '/archives/apps/remote-learning/react-vite'
 
 export function getRouter() {
   const context = getContext()
@@ -10,12 +11,11 @@ export function getRouter() {
   const router = createTanStackRouter({
     routeTree,
     context,
+    basepath: vaultBasepath,
     scrollRestoration: true,
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
   })
-
-  setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient })
 
   return router
 }

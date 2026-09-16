@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web App Architecture — Learning Guide · canvas</title>
+  <style>
+    :root {
+      --bg: #0b0f14; --surface: #12181f; --border: #243041;
+      --text: #d7e0ea; --muted: #8b9aab; --accent: #5cdb95;
+      --code-bg: #0a0e13; --pink: #ff7b72;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif;
+      line-height: 1.55; padding: 1.5rem 1rem 3rem;
+    }
+    .wrap { max-width: 920px; margin: 0 auto; }
+    nav { font-size: .875rem; margin-bottom: 1.25rem; color: var(--muted); }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    header.card, section.outline, section.source {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem 1.35rem; margin-bottom: 1rem;
+    }
+    h1.page { font-size: 1.45rem; font-weight: 650; letter-spacing: -.02em; }
+    .path { margin-top: .4rem; font-size: .8rem; color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .badge {
+      display: inline-block; margin-top: .75rem; font-size: .7rem;
+      font-family: ui-monospace, Menlo, monospace; color: var(--accent);
+      border: 1px solid var(--border); border-radius: 999px; padding: .15rem .5rem;
+    }
+    .muted { color: var(--muted); font-size: .9rem; }
+    h2 { font-size: 1rem; margin-bottom: .75rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .04em; }
+    h1.extracted { font-size: 1.25rem; margin: .4rem 0 .6rem; }
+    h2.extracted { font-size: 1.05rem; margin: 1rem 0 .4rem; color: var(--text);
+      text-transform: none; letter-spacing: 0; }
+    h3.extracted { font-size: .95rem; margin: .75rem 0 .3rem; color: #c9d4e0; }
+    p.extracted { color: var(--muted); font-size: .9rem; margin: .35rem 0; }
+    pre {
+      background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 1rem; overflow: auto; max-height: 70vh; font-size: .78rem;
+      line-height: 1.45; color: #c9d1d9;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    details summary {
+      cursor: pointer; color: var(--accent); font-size: .9rem; margin-bottom: .75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a href="/archives/">← vault index</a>
+      · <a href="https://github.com/pterodactor3000/archives/blob/main/notes/empty-window-canvases/web-app-architecture.canvas.tsx">GitHub source</a>
+    </nav>
+    <header class="card">
+      <h1 class="page">Web App Architecture — Learning Guide</h1>
+      <p class="path">notes/empty-window-canvases/web-app-architecture.canvas.tsx</p>
+      <span class="badge">canvas stand-in · not Cursor runtime</span>
+      <p class="muted" style="margin-top:.85rem">
+        Static HTML stand-in for browsing on GitHub Pages. Open the
+        <code style="color:var(--pink)">.canvas.tsx</code> in Cursor for the full canvas runtime.
+      </p>
+    </header>
+    <section class="outline"><h2>Extracted structure</h2><h1 class='extracted'>Web App Architecture — Learning Guide</h1><h2 class='extracted'>Mental model</h2><h2 class='extracted'>How to use this guide</h2><h2 class='extracted'>Architecture principles (framework-agnostic)</h2><h2 class='extracted'>Typical web app layers</h2><h2 class='extracted'>Angular architecture</h2><h2 class='extracted'>React architecture</h2><h2 class='extracted'>Angular vs React — architecture lens</h2><h2 class='extracted'>Backend &amp; data layer</h2><h2 class='extracted'>What is best for what</h2><h2 class='extracted'>Learning path (practical)</h2><h3 class='extracted'>Where data should live</h3><h3 class='extracted'>Mental model</h3><h3 class='extracted'>Thinking in React (build order)</h3><h3 class='extracted'>State ladder (prefer lowest rung)</h3><h3 class='extracted'>Similarities (do not miss these)</h3><h3 class='extracted'>API shapes</h3><h3 class='extracted'>Server layering (keep thin edges)</h3><h3 class='extracted'>Quick decision cheatsheet</h3><h3 class='extracted'>Docs to read (canonical)</h3><p class='extracted'>Principles first, then Angular vs React, then backend/data, then decision rules. Open beside chat; click sections to explore.</p><p class='extracted'>Separation of concerns, dependency direction, feature cohesion.</p><p class='extracted'>Angular = opinionated platform. React = library + your conventions (or Next as framework).</p><p class='extracted'>Same layering on server: handlers thin, domain clear, persistence isolated.</p><p class='extracted'>Pick stack from constraints (team, SEO, scale, time), not hype.</p><p class='extracted'>Learn these once. Every Angular/React debate is usually one of these in disguise.</p><p class='extracted'>UI should not know SQL. Forms should not own auth tokens. Domain rules should not depend on React hooks or Angular templates.</p><p class='extracted'>Smell: components that fetch, validate, mutate DB shape, and render in one file.</p><p class='extracted'>Outer layers depend on inner ones, not the reverse. Domain does not import HTTP clients or component libraries.</p><p class='extracted'>Angular DI and Nest providers make this explicit. In React you enforce it with folder boundaries and types.</p><p class='extracted'>Prefer orders/ (UI + state + API client) over giant components/ + services/ + hooks/ dumps.</p><p class='extracted'>Angular style guide: structure by feature areas. Same idea works in React (feature slices / vertical slices).</p></section>
+    <section class="source">
+      <details open>
+        <summary>Source (.canvas.tsx)</summary>
+        <pre>import {
+  Button,
+  Callout,
+  Card,
+  CardBody,
+  CardHeader,
+  Code,
+  CollapsibleSection,
+  Divider,
+  Grid,
+  H1,
+  H2,
+  H3,
+  Pill,
+  Row,
+  Stack,
+  Stat,
+  Table,
+  Text,
+  useCanvasState,
+} from &quot;cursor/canvas&quot;;
+
+type Section =
+  | &quot;overview&quot;
+  | &quot;principles&quot;
+  | &quot;layers&quot;
+  | &quot;angular&quot;
+  | &quot;react&quot;
+  | &quot;compare&quot;
+  | &quot;backend&quot;
+  | &quot;decide&quot;
+  | &quot;path&quot;;
+
+type Scenario =
+  | &quot;enterprise&quot;
+  | &quot;product&quot;
+  | &quot;content&quot;
+  | &quot;dashboard&quot;
+  | &quot;startup&quot;
+  | &quot;team&quot;;
+
+const SECTIONS: { id: Section; label: string }[] = [
+  { id: &quot;overview&quot;, label: &quot;Overview&quot; },
+  { id: &quot;principles&quot;, label: &quot;Principles&quot; },
+  { id: &quot;layers&quot;, label: &quot;Layers&quot; },
+  { id: &quot;angular&quot;, label: &quot;Angular&quot; },
+  { id: &quot;react&quot;, label: &quot;React&quot; },
+  { id: &quot;compare&quot;, label: &quot;Compare&quot; },
+  { id: &quot;backend&quot;, label: &quot;Backend &amp; Data&quot; },
+  { id: &quot;decide&quot;, label: &quot;Decide&quot; },
+  { id: &quot;path&quot;, label: &quot;Learn path&quot; },
+];
+
+const SCENARIOS: {
+  id: Scenario;
+  label: string;
+  pick: string;
+  why: string;
+  stack: string;
+  avoid: string;
+}[] = [
+  {
+    id: &quot;enterprise&quot;,
+    label: &quot;Large enterprise SPA&quot;,
+    pick: &quot;Angular (or React + strict conventions)&quot;,
+    why: &quot;DI, opinionated structure, long-lived teams, shared services, route-scoped providers. Predictable scale beats DIY architecture.&quot;,
+    stack: &quot;Angular + Nest/Java/.NET API + Postgres + Redis cache&quot;,
+    avoid: &quot;Unstructured React folder-by-type with ad-hoc global state&quot;,
+  },
+  {
+    id: &quot;product&quot;,
+    label: &quot;SaaS product UI&quot;,
+    pick: &quot;React + Next.js (or Vite SPA)&quot;,
+    why: &quot;Composition flexibility, huge ecosystem, fast iteration. Next when SEO/SSR or API routes help; Vite SPA when pure app behind login.&quot;,
+    stack: &quot;Next App Router or Vite + React Query/TanStack + REST/tRPC + Postgres&quot;,
+    avoid: &quot;Over-engineering CQRS on day one; Redux for every form field&quot;,
+  },
+  {
+    id: &quot;content&quot;,
+    label: &quot;Marketing / content site&quot;,
+    pick: &quot;Next.js (or Astro) — not Angular SPA&quot;,
+    why: &quot;Server Components + caching/revalidate fit content. Angular SPA is wrong tool for mostly-static pages.&quot;,
+    stack: &quot;Next App Router + CMS (or MDX) + CDN + edge cache&quot;,
+    avoid: &quot;Client-heavy SPA with empty shell HTML&quot;,
+  },
+  {
+    id: &quot;dashboard&quot;,
+    label: &quot;Internal admin / dashboard&quot;,
+    pick: &quot;Either — pick team skill&quot;,
+    why: &quot;Auth wall, no SEO. Angular DI + tables OR React + TanStack Table both fine. Consistency &gt; framework brand.&quot;,
+    stack: &quot;SPA (Angular or Vite React) + BFF/API + RBAC + Postgres&quot;,
+    avoid: &quot;SSR complexity you do not need&quot;,
+  },
+  {
+    id: &quot;startup&quot;,
+    label: &quot;Small team, ship fast&quot;,
+    pick: &quot;React + Next.js (full-stack)&quot;,
+    why: &quot;One language, Server Actions/Route Handlers, fewer repos. Angular shines later when structure pays off.&quot;,
+    stack: &quot;Next + Prisma/Drizzle + Postgres (or Supabase) + auth library&quot;,
+    avoid: &quot;Microservices + event bus before product-market fit&quot;,
+  },
+  {
+    id: &quot;team&quot;,
+    label: &quot;Many teams, shared design system&quot;,
+    pick: &quot;Angular OR React monorepo with boundaries&quot;,
+    why: &quot;Architecture problem is ownership + contracts, not framework. Feature folders, shared UI lib, clear API versioning.&quot;,
+    stack: &quot;Nx/Turborepo + feature packages + OpenAPI/GraphQL contract + CI boundaries&quot;,
+    avoid: &quot;One giant shared store everyone mutates&quot;,
+  },
+];
+
+export default function WebAppArchitectureGuide() {
+  const [section, setSection] = useCanvasState&lt;Section&gt;(&quot;section&quot;, &quot;overview&quot;);
+  const [scenario, setScenario] = useCanvasState&lt;Scenario&gt;(&quot;scenario&quot;, &quot;product&quot;);
+
+  const active = SCENARIOS.find((s) =&gt; s.id === scenario)!;
+
+  return (
+    &lt;Stack gap={20}&gt;
+      &lt;Stack gap={6}&gt;
+        &lt;H1&gt;Web App Architecture — Learning Guide&lt;/H1&gt;
+        &lt;Text tone=&quot;secondary&quot;&gt;
+          Principles first, then Angular vs React, then backend/data, then
+          decision rules. Open beside chat; click sections to explore.
+        &lt;/Text&gt;
+      &lt;/Stack&gt;
+
+      &lt;Row gap={6} wrap&gt;
+        {SECTIONS.map((s) =&gt; (
+          &lt;span key={s.id}&gt;
+            &lt;Button
+              variant={section === s.id ? &quot;primary&quot; : &quot;secondary&quot;}
+              onClick={() =&gt; setSection(s.id)}
+            &gt;
+              {s.label}
+            &lt;/Button&gt;
+          &lt;/span&gt;
+        ))}
+      &lt;/Row&gt;
+
+      &lt;Divider /&gt;
+
+      {section === &quot;overview&quot; &amp;&amp; &lt;Overview onGo={setSection} /&gt;}
+      {section === &quot;principles&quot; &amp;&amp; &lt;Principles /&gt;}
+      {section === &quot;layers&quot; &amp;&amp; &lt;Layers /&gt;}
+      {section === &quot;angular&quot; &amp;&amp; &lt;AngularSection /&gt;}
+      {section === &quot;react&quot; &amp;&amp; &lt;ReactSection /&gt;}
+      {section === &quot;compare&quot; &amp;&amp; &lt;Compare /&gt;}
+      {section === &quot;backend&quot; &amp;&amp; &lt;BackendData /&gt;}
+      {section === &quot;decide&quot; &amp;&amp; (
+        &lt;Decide
+          scenario={scenario}
+          setScenario={setScenario}
+          active={active}
+        /&gt;
+      )}
+      {section === &quot;path&quot; &amp;&amp; &lt;LearnPath onGo={setSection} /&gt;}
+    &lt;/Stack&gt;
+  );
+}
+
+function Overview({ onGo }: { onGo: (s: Section) =&gt; void }) {
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;Callout tone=&quot;info&quot; title=&quot;Core idea&quot;&gt;
+        Architecture is how you split responsibilities so change stays local.
+        Frameworks differ in how much structure they give you; principles stay
+        the same.
+      &lt;/Callout&gt;
+
+      &lt;Grid columns={3} gap={12}&gt;
+        &lt;Stat value=&quot;Same&quot; label=&quot;Principles everywhere&quot; tone=&quot;info&quot; /&gt;
+        &lt;Stat value=&quot;Different&quot; label=&quot;Where structure lives&quot; /&gt;
+        &lt;Stat value=&quot;Context&quot; label=&quot;Best stack = situation&quot; tone=&quot;success&quot; /&gt;
+      &lt;/Grid&gt;
+
+      &lt;H2&gt;Mental model&lt;/H2&gt;
+      &lt;Table
+        headers={[&quot;Layer&quot;, &quot;Job&quot;, &quot;Typical pieces&quot;]}
+        rows={[
+          [
+            &quot;UI / presentation&quot;,
+            &quot;Render + capture input&quot;,
+            &quot;Components, routes, forms, design system&quot;,
+          ],
+          [
+            &quot;Client state / orchestration&quot;,
+            &quot;What UI knows right now&quot;,
+            &quot;Local state, stores, signals, React Query cache&quot;,
+          ],
+          [
+            &quot;API / BFF&quot;,
+            &quot;Auth, validation, aggregation&quot;,
+            &quot;REST, GraphQL, tRPC, Nest controllers, Next Route Handlers&quot;,
+          ],
+          [
+            &quot;Domain / application&quot;,
+            &quot;Business rules&quot;,
+            &quot;Services, use-cases, domain models&quot;,
+          ],
+          [
+            &quot;Data&quot;,
+            &quot;Persist + query&quot;,
+            &quot;SQL/NoSQL, ORM, migrations, caches, search&quot;,
+          ],
+        ]}
+        rowTone={[&quot;info&quot;, undefined, undefined, undefined, &quot;success&quot;]}
+      /&gt;
+
+      &lt;H2&gt;How to use this guide&lt;/H2&gt;
+      &lt;Grid columns={2} gap={12}&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;1. Lock principles&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Text&gt;
+              Separation of concerns, dependency direction, feature cohesion.
+            &lt;/Text&gt;
+            &lt;Row gap={8} style={{ marginTop: 10 }}&gt;
+              &lt;Button  onClick={() =&gt; onGo(&quot;principles&quot;)}&gt;
+                Principles
+              &lt;/Button&gt;
+            &lt;/Row&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;2. Map frameworks&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Text&gt;
+              Angular = opinionated platform. React = library + your conventions
+              (or Next as framework).
+            &lt;/Text&gt;
+            &lt;Row gap={8} style={{ marginTop: 10 }}&gt;
+              &lt;Button  onClick={() =&gt; onGo(&quot;angular&quot;)}&gt;
+                Angular
+              &lt;/Button&gt;
+              &lt;Button  onClick={() =&gt; onGo(&quot;react&quot;)}&gt;
+                React
+              &lt;/Button&gt;
+            &lt;/Row&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;3. Add backend &amp; data&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Text&gt;
+              Same layering on server: handlers thin, domain clear, persistence
+              isolated.
+            &lt;/Text&gt;
+            &lt;Row gap={8} style={{ marginTop: 10 }}&gt;
+              &lt;Button  onClick={() =&gt; onGo(&quot;backend&quot;)}&gt;
+                Backend &amp; Data
+              &lt;/Button&gt;
+            &lt;/Row&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;4. Decide by situation&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Text&gt;
+              Pick stack from constraints (team, SEO, scale, time), not hype.
+            &lt;/Text&gt;
+            &lt;Row gap={8} style={{ marginTop: 10 }}&gt;
+              &lt;Button  variant=&quot;primary&quot; onClick={() =&gt; onGo(&quot;decide&quot;)}&gt;
+                Decision guide
+              &lt;/Button&gt;
+            &lt;/Row&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+      &lt;/Grid&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function Principles() {
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;H2&gt;Architecture principles (framework-agnostic)&lt;/H2&gt;
+      &lt;Text tone=&quot;secondary&quot;&gt;
+        Learn these once. Every Angular/React debate is usually one of these in
+        disguise.
+      &lt;/Text&gt;
+
+      &lt;CollapsibleSection title=&quot;1. Separation of concerns&quot; defaultOpen&gt;
+        &lt;Stack gap={8}&gt;
+          &lt;Text&gt;
+            UI should not know SQL. Forms should not own auth tokens. Domain
+            rules should not depend on React hooks or Angular templates.
+          &lt;/Text&gt;
+          &lt;Text tone=&quot;secondary&quot;&gt;
+            Smell: components that fetch, validate, mutate DB shape, and render
+            in one file.
+          &lt;/Text&gt;
+        &lt;/Stack&gt;
+      &lt;/CollapsibleSection&gt;
+
+      &lt;CollapsibleSection title=&quot;2. Dependency rule (inward)&quot;&gt;
+        &lt;Stack gap={8}&gt;
+          &lt;Text&gt;
+            Outer layers depend on inner ones, not the reverse. Domain does not
+            import HTTP clients or component libraries.
+          &lt;/Text&gt;
+          &lt;Text tone=&quot;secondary&quot;&gt;
+            Angular DI and Nest providers make this explicit. In React you
+            enforce it with folder boundaries and types.
+          &lt;/Text&gt;
+        &lt;/Stack&gt;
+      &lt;/CollapsibleSection&gt;
+
+      &lt;CollapsibleSection title=&quot;3. Feature cohesion over type folders&quot;&gt;
+        &lt;Stack gap={8}&gt;
+          &lt;Text&gt;
+            Prefer &lt;Code&gt;orders/&lt;/Code&gt; (UI + state + API client) over giant{&quot; &quot;}
+            &lt;Code&gt;components/&lt;/Code&gt; + &lt;Code&gt;services/&lt;/Code&gt; +{&quot; &quot;}
+            &lt;Code&gt;hooks/&lt;/Code&gt; dumps.
+          &lt;/Text&gt;
+          &lt;Text tone=&quot;secondary&quot;&gt;
+            Angular style guide: structure by feature areas. Same idea works in
+            React (feature slices / vertical slices).
+          &lt;/Text&gt;
+        &lt;/Stack&gt;
+      &lt;/CollapsibleSection&gt;
+
+      &lt;CollapsibleSection title=&quot;4. Single source of truth for state&quot;&gt;
+        &lt;Stack gap={8}&gt;
+          &lt;Text&gt;
+            Decide where each fact lives: server (canonical), client cache
+            (derived), UI (ephemeral). Duplicate truths cause sync bugs.
+          &lt;/Text&gt;
+          &lt;Text tone=&quot;secondary&quot;&gt;
+            Server data: prefer query libraries (TanStack Query) or Angular
+            resource/signals patterns — not a second Redux copy of the API.
+          &lt;/Text&gt;
+        &lt;/Stack&gt;
+      &lt;/CollapsibleSection&gt;
+
+      &lt;CollapsibleSection title=&quot;5. Explicit boundaries &amp; contracts&quot;&gt;
+        &lt;Stack gap={8}&gt;
+          &lt;Text&gt;
+            Front ↔ API via OpenAPI/GraphQL schema. Feature ↔ feature via public
+            exports only. Auth at edges (guards, middleware).
+          &lt;/Text&gt;
+        &lt;/Stack&gt;
+      &lt;/CollapsibleSection&gt;
+
+      &lt;CollapsibleSection title=&quot;6. Design for change, not for perfection&quot;&gt;
+        &lt;Stack gap={8}&gt;
+          &lt;Text&gt;
+            Start with clear folders and thin layers. Add CQRS, event sourcing,
+            micro-frontends only when pain is real.
+          &lt;/Text&gt;
+        &lt;/Stack&gt;
+      &lt;/CollapsibleSection&gt;
+
+      &lt;Callout tone=&quot;warning&quot; title=&quot;Common trap&quot;&gt;
+        Copying Clean Architecture folder names without enforcing dependency
+        direction. Names alone do nothing — boundaries do.
+      &lt;/Callout&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function Layers() {
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;H2&gt;Typical web app layers&lt;/H2&gt;
+      &lt;Text tone=&quot;secondary&quot;&gt;
+        Same cake in SPA, SSR app, or BFF. Thickness of each layer changes by
+        product.
+      &lt;/Text&gt;
+
+      &lt;Table
+        headers={[&quot;Layer&quot;, &quot;Angular home&quot;, &quot;React / Next home&quot;, &quot;Failure mode&quot;]}
+        rows={[
+          [
+            &quot;Presentation&quot;,
+            &quot;Standalone components, templates&quot;,
+            &quot;Components, Server/Client split&quot;,
+            &quot;God components&quot;,
+          ],
+          [
+            &quot;UI state&quot;,
+            &quot;Signals, component state&quot;,
+            &quot;useState, useReducer, Zustand&quot;,
+            &quot;Everything in global store&quot;,
+          ],
+          [
+            &quot;Server state&quot;,
+            &quot;HttpClient + services / resources&quot;,
+            &quot;TanStack Query, RSC fetch&quot;,
+            &quot;Manual useEffect fetch soup&quot;,
+          ],
+          [
+            &quot;Cross-cutting&quot;,
+            &quot;Interceptors, guards, DI tokens&quot;,
+            &quot;Middleware, context, HOCs rare&quot;,
+            &quot;Auth logic in every page&quot;,
+          ],
+          [
+            &quot;API edge&quot;,
+            &quot;Separate Nest/Spring/.NET&quot;,
+            &quot;Route Handlers, Nest, or BFF&quot;,
+            &quot;Business rules only in UI&quot;,
+          ],
+          [
+            &quot;Persistence&quot;,
+            &quot;ORM behind repositories&quot;,
+            &quot;Same — Prisma/Drizzle/SQL&quot;,
+            &quot;SQL strings in controllers&quot;,
+          ],
+        ]}
+      /&gt;
+
+      &lt;H3&gt;Where data should live&lt;/H3&gt;
+      &lt;Grid columns={3} gap={12}&gt;
+        &lt;Card&gt;
+          &lt;CardHeader trailing={&lt;Pill tone=&quot;success&quot; size=&quot;sm&quot;&gt;Server&lt;/Pill&gt;}&gt;
+            Canonical data
+          &lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Text&gt;Users, orders, permissions, money. Source of truth in DB.&lt;/Text&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+        &lt;Card&gt;
+          &lt;CardHeader trailing={&lt;Pill tone=&quot;info&quot; size=&quot;sm&quot;&gt;Cache&lt;/Pill&gt;}&gt;
+            Derived / cached
+          &lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Text&gt;
+              Lists, detail views, React Query / HTTP cache. Invalidate on
+              mutation.
+            &lt;/Text&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+        &lt;Card&gt;
+          &lt;CardHeader trailing={&lt;Pill size=&quot;sm&quot;&gt;Client&lt;/Pill&gt;}&gt;
+            Ephemeral UI
+          &lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Text&gt;
+              Modal open, draft form fields, selected tab. Die on refresh — OK.
+            &lt;/Text&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+      &lt;/Grid&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function AngularSection() {
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;Row gap={8} align=&quot;center&quot;&gt;
+        &lt;H2&gt;Angular architecture&lt;/H2&gt;
+        &lt;Pill tone=&quot;info&quot; size=&quot;sm&quot;&gt;
+          Opinionated platform
+        &lt;/Pill&gt;
+      &lt;/Row&gt;
+      &lt;Text tone=&quot;secondary&quot;&gt;
+        From angular.dev: modular via components + dependency injection;
+        feature folders; Signals for fine-grained reactivity; route-level
+        providers for scoped services.
+      &lt;/Text&gt;
+
+      &lt;Grid columns={2} gap={12}&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;Built-in architecture tools&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Stack gap={6}&gt;
+              &lt;Text&gt;• Dependency injection (inject / providers)&lt;/Text&gt;
+              &lt;Text&gt;• Standalone components (modern default)&lt;/Text&gt;
+              &lt;Text&gt;• Router + lazy routes + route providers&lt;/Text&gt;
+              &lt;Text&gt;• Interceptors, guards, resolvers&lt;/Text&gt;
+              &lt;Text&gt;• Signals / RxJS for reactivity&lt;/Text&gt;
+              &lt;Text&gt;• CLI + style guide enforce structure&lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;Recommended shape&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Stack gap={6}&gt;
+              &lt;Text&gt;
+                Feature folders (e.g. &lt;Code&gt;movie-reel/show-times/&lt;/Code&gt;), not
+                type dumps.
+              &lt;/Text&gt;
+              &lt;Text&gt;
+                Shared UI + core (auth, HTTP) as libraries when monorepo.
+              &lt;/Text&gt;
+              &lt;Text&gt;
+                Services hold orchestration; components stay presentational when
+                possible.
+              &lt;/Text&gt;
+              &lt;Text&gt;
+                Scope providers to routes for feature isolation (admin vs shop
+                carts).
+              &lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+      &lt;/Grid&gt;
+
+      &lt;H3&gt;Mental model&lt;/H3&gt;
+      &lt;Table
+        headers={[&quot;Concept&quot;, &quot;Role&quot;]}
+        rows={[
+          [&quot;Component&quot;, &quot;View + local interaction; inject collaborators&quot;],
+          [&quot;Service (providedIn / route)&quot;, &quot;Shared logic, state, HTTP, domain ops&quot;],
+          [&quot;Token / provider&quot;, &quot;Swap implementations (mock, env, feature flag)&quot;],
+          [&quot;Guard / interceptor&quot;, &quot;Cross-cutting at edges&quot;],
+          [&quot;Signal / Observable&quot;, &quot;Reactive state and async streams&quot;],
+        ]}
+      /&gt;
+
+      &lt;Callout tone=&quot;info&quot; title=&quot;When Angular wins&quot;&gt;
+        Large teams, long projects, enterprise consistency, heavy forms, need for
+        one blessed way to do DI, routing, and HTTP. You trade flexibility for
+        guardrails.
+      &lt;/Callout&gt;
+
+      &lt;CollapsibleSection title=&quot;Modern Angular notes (standalone + signals)&quot;&gt;
+        &lt;Stack gap={8}&gt;
+          &lt;Text&gt;
+            Prefer standalone APIs over NgModules for new apps. Use{&quot; &quot;}
+            &lt;Code&gt;inject()&lt;/Code&gt; in components/services. Route{&quot; &quot;}
+            &lt;Code&gt;providers&lt;/Code&gt; isolate feature services until that route
+            loads.
+          &lt;/Text&gt;
+          &lt;Text tone=&quot;secondary&quot;&gt;
+            Signals reduce change-detection noise; keep RxJS for true streams
+            (WebSocket, complex pipelines).
+          &lt;/Text&gt;
+        &lt;/Stack&gt;
+      &lt;/CollapsibleSection&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function ReactSection() {
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;Row gap={8} align=&quot;center&quot;&gt;
+        &lt;H2&gt;React architecture&lt;/H2&gt;
+        &lt;Pill tone=&quot;warning&quot; size=&quot;sm&quot;&gt;
+          Library — you bring structure
+        &lt;/Pill&gt;
+      &lt;/Row&gt;
+      &lt;Text tone=&quot;secondary&quot;&gt;
+        From react.dev: Thinking in React (UI hierarchy → static → state
+        location). Context + reducer for app state. Server Components cannot use
+        interactive APIs — compose with Client Components.
+      &lt;/Text&gt;
+
+      &lt;H3&gt;Thinking in React (build order)&lt;/H3&gt;
+      &lt;Table
+        headers={[&quot;Step&quot;, &quot;Do this&quot;]}
+        rows={[
+          [&quot;1&quot;, &quot;Break UI into a component hierarchy from the mock&quot;],
+          [&quot;2&quot;, &quot;Build a static version with props only&quot;],
+          [&quot;3&quot;, &quot;Identify minimal state (not derived duplicates)&quot;],
+          [&quot;4&quot;, &quot;Place state at nearest common owner&quot;],
+          [&quot;5&quot;, &quot;Add inverse data flow (callbacks / dispatch)&quot;],
+        ]}
+        columnAlign={[&quot;center&quot;, &quot;left&quot;]}
+      /&gt;
+
+      &lt;Grid columns={2} gap={12}&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;SPA (Vite + React)&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Stack gap={6}&gt;
+              &lt;Text&gt;You choose: router, data fetching, state, bundling.&lt;/Text&gt;
+              &lt;Text&gt;
+                Common: React Router + TanStack Query + Zustand/Context.
+              &lt;/Text&gt;
+              &lt;Text&gt;Best for authenticated apps with separate API.&lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;Next.js App Router&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Stack gap={6}&gt;
+              &lt;Text&gt;Server Components default — fetch on server, less JS.&lt;/Text&gt;
+              &lt;Text&gt;
+                &lt;Code&gt;&amp;apos;use client&amp;apos;&lt;/Code&gt; only for interactivity.
+              &lt;/Text&gt;
+              &lt;Text&gt;
+                Cache via &lt;Code&gt;fetch&lt;/Code&gt; options / revalidate; Route Handlers
+                for client-triggered API.
+              &lt;/Text&gt;
+              &lt;Text tone=&quot;secondary&quot;&gt;
+                Do not call Route Handlers from Server Components (extra hop).
+              &lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+      &lt;/Grid&gt;
+
+      &lt;H3&gt;State ladder (prefer lowest rung)&lt;/H3&gt;
+      &lt;Table
+        headers={[&quot;Need&quot;, &quot;Tool&quot;, &quot;Avoid using for&quot;]}
+        rows={[
+          [&quot;One component&quot;, &quot;useState&quot;, &quot;Shared distant UI&quot;],
+          [&quot;Sibling coordination&quot;, &quot;Lift state / useReducer&quot;, &quot;Whole app&quot;],
+          [&quot;Tree-wide UI concerns&quot;, &quot;Context (+ reducer)&quot;, &quot;High-freq server lists&quot;],
+          [&quot;Server/async cache&quot;, &quot;TanStack Query / RSC&quot;, &quot;Modal open flags&quot;],
+          [&quot;Complex client domain&quot;, &quot;Zustand / Redux Toolkit&quot;, &quot;Every form field&quot;],
+        ]}
+      /&gt;
+
+      &lt;Callout tone=&quot;info&quot; title=&quot;When React wins&quot;&gt;
+        Product velocity, custom UX, ecosystem (charts, DnD, design systems),
+        full-stack JS with Next, or teams that want to choose conventions.
+      &lt;/Callout&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function Compare() {
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;H2&gt;Angular vs React — architecture lens&lt;/H2&gt;
+      &lt;Text tone=&quot;secondary&quot;&gt;
+        Not “which is better.” Which constraints match your situation.
+      &lt;/Text&gt;
+
+      &lt;Table
+        headers={[&quot;Dimension&quot;, &quot;Angular&quot;, &quot;React&quot;]}
+        rows={[
+          [
+            &quot;What it is&quot;,
+            &quot;Full framework (router, DI, HTTP, forms, CLI)&quot;,
+            &quot;UI library; meta-framework optional (Next)&quot;,
+          ],
+          [
+            &quot;Structure source&quot;,
+            &quot;Platform + style guide + DI graph&quot;,
+            &quot;Team conventions / Next file conventions&quot;,
+          ],
+          [
+            &quot;Dependency wiring&quot;,
+            &quot;First-class DI + hierarchical injectors&quot;,
+            &quot;Imports, props, context; no built-in DI&quot;,
+          ],
+          [
+            &quot;State model&quot;,
+            &quot;Signals + services + RxJS&quot;,
+            &quot;Local state + external libraries&quot;,
+          ],
+          [
+            &quot;SSR / full-stack&quot;,
+            &quot;Angular SSR / Analog; usually separate API&quot;,
+            &quot;Next/Remix first-class RSC + routes&quot;,
+          ],
+          [
+            &quot;Learning curve&quot;,
+            &quot;Steeper, then consistent&quot;,
+            &quot;Shallower start, architecture debt risk&quot;,
+          ],
+          [
+            &quot;Best team fit&quot;,
+            &quot;Enterprise, shared standards&quot;,
+            &quot;Product teams, mixed stacks&quot;,
+          ],
+        ]}
+        rowTone={[
+          &quot;info&quot;,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          &quot;success&quot;,
+        ]}
+      /&gt;
+
+      &lt;H3&gt;Similarities (do not miss these)&lt;/H3&gt;
+      &lt;Grid columns={2} gap={12}&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;Both want&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Stack gap={6}&gt;
+              &lt;Text&gt;Component trees + unidirectional data ideas&lt;/Text&gt;
+              &lt;Text&gt;Feature-based folders at scale&lt;/Text&gt;
+              &lt;Text&gt;Lazy routes / code splitting&lt;/Text&gt;
+              &lt;Text&gt;Clear client vs server state&lt;/Text&gt;
+              &lt;Text&gt;Design systems as shared packages&lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;Both fail the same ways&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Stack gap={6}&gt;
+              &lt;Text&gt;Business logic trapped in views&lt;/Text&gt;
+              &lt;Text&gt;Global mutable bags of state&lt;/Text&gt;
+              &lt;Text&gt;No API contract&lt;/Text&gt;
+              &lt;Text&gt;Folder-by-type at 200k LOC&lt;/Text&gt;
+              &lt;Text&gt;Premature micro-frontends&lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+      &lt;/Grid&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function BackendData() {
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;H2&gt;Backend &amp; data layer&lt;/H2&gt;
+      &lt;Text tone=&quot;secondary&quot;&gt;
+        Frontend architecture collapses without a clear API and persistence
+        story.
+      &lt;/Text&gt;
+
+      &lt;H3&gt;API shapes&lt;/H3&gt;
+      &lt;Table
+        headers={[&quot;Style&quot;, &quot;Use when&quot;, &quot;Watch out&quot;]}
+        rows={[
+          [
+            &quot;REST + OpenAPI&quot;,
+            &quot;CRUD resources, broad clients, caching&quot;,
+            &quot;Chatty endpoints; version carefully&quot;,
+          ],
+          [
+            &quot;GraphQL&quot;,
+            &quot;Many clients, nested reads, BFF aggregation&quot;,
+            &quot;N+1, auth on fields, cache complexity&quot;,
+          ],
+          [
+            &quot;tRPC / RPC&quot;,
+            &quot;TS monorepo, end-to-end types&quot;,
+            &quot;Non-TS clients; coupling to one app&quot;,
+          ],
+          [
+            &quot;BFF (Backend for Frontend)&quot;,
+            &quot;UI-specific aggregation, auth cookies&quot;,
+            &quot;Duplicating domain logic wrongly&quot;,
+          ],
+        ]}
+      /&gt;
+
+      &lt;H3&gt;Server layering (keep thin edges)&lt;/H3&gt;
+      &lt;Table
+        headers={[&quot;Layer&quot;, &quot;Contains&quot;, &quot;Does not contain&quot;]}
+        rows={[
+          [
+            &quot;Transport (controller / route)&quot;,
+            &quot;Parse, auth context, status codes&quot;,
+            &quot;Business rules, SQL&quot;,
+          ],
+          [
+            &quot;Application / use-case&quot;,
+            &quot;Orchestrate domain ops, transactions&quot;,
+            &quot;HTTP details, JSX&quot;,
+          ],
+          [
+            &quot;Domain&quot;,
+            &quot;Invariants, entities, policies&quot;,
+            &quot;ORM entities if they leak persistence&quot;,
+          ],
+          [
+            &quot;Infrastructure&quot;,
+            &quot;ORM, queues, email, S3&quot;,
+            &quot;UI concepts&quot;,
+          ],
+        ]}
+      /&gt;
+
+      &lt;Grid columns={2} gap={12}&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;Data modeling basics&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Stack gap={6}&gt;
+              &lt;Text&gt;• Normalize for write integrity; denormalize for read speed&lt;/Text&gt;
+              &lt;Text&gt;• Migrations as code; never hand-edit prod schema&lt;/Text&gt;
+              &lt;Text&gt;• Transactions for multi-row invariants&lt;/Text&gt;
+              &lt;Text&gt;• Soft delete / audit when business needs history&lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;Caching rules of thumb&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Stack gap={6}&gt;
+              &lt;Text&gt;• Cache reads that are hot and mostly stable&lt;/Text&gt;
+              &lt;Text&gt;• Invalidate on write (or short TTL + accept staleness)&lt;/Text&gt;
+              &lt;Text&gt;• HTTP cache / CDN for public content&lt;/Text&gt;
+              &lt;Text&gt;• Redis for sessions, rate limits, computed views&lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+      &lt;/Grid&gt;
+
+      &lt;Callout tone=&quot;warning&quot; title=&quot;Frontend ↔ data anti-pattern&quot;&gt;
+        Letting the UI dictate table shapes (or dumping ORM models straight into
+        JSON). Introduce DTOs / mappers at the API boundary.
+      &lt;/Callout&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function Decide({
+  scenario,
+  setScenario,
+  active,
+}: {
+  scenario: Scenario;
+  setScenario: (s: Scenario) =&gt; void;
+  active: (typeof SCENARIOS)[number];
+}) {
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;H2&gt;What is best for what&lt;/H2&gt;
+      &lt;Text tone=&quot;secondary&quot;&gt;
+        Pick a situation. Recommendation is a starting bias, not a law.
+      &lt;/Text&gt;
+
+      &lt;Row gap={6} wrap&gt;
+        {SCENARIOS.map((s) =&gt; (
+          &lt;span key={s.id}&gt;
+            &lt;Button
+              variant={scenario === s.id ? &quot;primary&quot; : &quot;secondary&quot;}
+              onClick={() =&gt; setScenario(s.id)}
+            &gt;
+              {s.label}
+            &lt;/Button&gt;
+          &lt;/span&gt;
+        ))}
+      &lt;/Row&gt;
+
+      &lt;Card&gt;
+        &lt;CardHeader trailing={&lt;Pill tone=&quot;success&quot;&gt;{active.pick}&lt;/Pill&gt;}&gt;
+          {active.label}
+        &lt;/CardHeader&gt;
+        &lt;CardBody&gt;
+          &lt;Stack gap={10}&gt;
+            &lt;Stack gap={4}&gt;
+              &lt;Text weight=&quot;semibold&quot;&gt;Why&lt;/Text&gt;
+              &lt;Text&gt;{active.why}&lt;/Text&gt;
+            &lt;/Stack&gt;
+            &lt;Stack gap={4}&gt;
+              &lt;Text weight=&quot;semibold&quot;&gt;Example stack&lt;/Text&gt;
+              &lt;Text&gt;{active.stack}&lt;/Text&gt;
+            &lt;/Stack&gt;
+            &lt;Stack gap={4}&gt;
+              &lt;Text weight=&quot;semibold&quot;&gt;Usually avoid&lt;/Text&gt;
+              &lt;Text tone=&quot;secondary&quot;&gt;{active.avoid}&lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/Stack&gt;
+        &lt;/CardBody&gt;
+      &lt;/Card&gt;
+
+      &lt;H3&gt;Quick decision cheatsheet&lt;/H3&gt;
+      &lt;Table
+        headers={[&quot;If you need…&quot;, &quot;Lean toward…&quot;]}
+        rows={[
+          [&quot;One blessed enterprise way&quot;, &quot;Angular&quot;],
+          [&quot;Max UI ecosystem + hiring pool&quot;, &quot;React&quot;],
+          [&quot;SEO + content + app in one repo&quot;, &quot;Next.js&quot;],
+          [&quot;Strict DI &amp; testability culture&quot;, &quot;Angular (+ Nest similar mental model)&quot;],
+          [&quot;Ship MVP this month, 2–3 people&quot;, &quot;Next or Vite React&quot;],
+          [&quot;Heavy offline / complex client domain&quot;, &quot;SPA + solid client store&quot;],
+          [&quot;Many external API consumers&quot;, &quot;Separate API + OpenAPI, thin UIs&quot;],
+        ]}
+      /&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function LearnPath({ onGo }: { onGo: (s: Section) =&gt; void }) {
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;H2&gt;Learning path (practical)&lt;/H2&gt;
+      &lt;Text tone=&quot;secondary&quot;&gt;
+        Order matters. Architecture clicks after you feel pain of unstructured
+        growth — but you can shortcut with deliberate practice.
+      &lt;/Text&gt;
+
+      &lt;Table
+        headers={[&quot;Phase&quot;, &quot;Focus&quot;, &quot;Concrete practice&quot;]}
+        rows={[
+          [
+            &quot;1&quot;,
+            &quot;Principles&quot;,
+            &quot;Redraw one app as layers; list what each folder may import&quot;,
+          ],
+          [
+            &quot;2&quot;,
+            &quot;One framework deep&quot;,
+            &quot;Angular: feature + DI + route providers. React: Thinking in React + Query&quot;,
+          ],
+          [
+            &quot;3&quot;,
+            &quot;Compare deliberately&quot;,
+            &quot;Same todo app in both: note where structure is forced vs chosen&quot;,
+          ],
+          [
+            &quot;4&quot;,
+            &quot;Add API + DB&quot;,
+            &quot;OpenAPI contract; use-cases; migrations; no SQL in UI&quot;,
+          ],
+          [
+            &quot;5&quot;,
+            &quot;Scale patterns&quot;,
+            &quot;Monorepo boundaries, auth, caching, observability&quot;,
+          ],
+        ]}
+        columnAlign={[&quot;center&quot;, &quot;left&quot;, &quot;left&quot;]}
+      /&gt;
+
+      &lt;H3&gt;Docs to read (canonical)&lt;/H3&gt;
+      &lt;Grid columns={2} gap={12}&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;Angular&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Stack gap={6}&gt;
+              &lt;Text&gt;• angular.dev style guide (feature folders)&lt;/Text&gt;
+              &lt;Text&gt;• Dependency injection + route providers&lt;/Text&gt;
+              &lt;Text&gt;• Signals fundamentals&lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;React / Next&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Stack gap={6}&gt;
+              &lt;Text&gt;• react.dev — Thinking in React&lt;/Text&gt;
+              &lt;Text&gt;• Scaling with reducer + context&lt;/Text&gt;
+              &lt;Text&gt;• nextjs.org — Server vs Client Components&lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+      &lt;/Grid&gt;
+
+      &lt;Callout tone=&quot;success&quot; title=&quot;Next step with me&quot;&gt;
+        Pick one: (A) deep-dive a principle with a before/after folder tree, (B)
+        Angular feature architecture sketch for an app you name, (C) React/Next
+        layering for the same app, (D) backend + data model for that app.
+      &lt;/Callout&gt;
+
+      &lt;Row gap={8}&gt;
+        &lt;Button  onClick={() =&gt; onGo(&quot;principles&quot;)}&gt;
+          Back to principles
+        &lt;/Button&gt;
+        &lt;Button  variant=&quot;primary&quot; onClick={() =&gt; onGo(&quot;decide&quot;)}&gt;
+          Decision guide
+        &lt;/Button&gt;
+      &lt;/Row&gt;
+    &lt;/Stack&gt;
+  );
+}
+</pre>
+      </details>
+    </section>
+  </div>
+</body>
+</html>

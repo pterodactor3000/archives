@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frontend senior gap study guide · canvas</title>
+  <style>
+    :root {
+      --bg: #0b0f14; --surface: #12181f; --border: #243041;
+      --text: #d7e0ea; --muted: #8b9aab; --accent: #5cdb95;
+      --code-bg: #0a0e13; --pink: #ff7b72;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif;
+      line-height: 1.55; padding: 1.5rem 1rem 3rem;
+    }
+    .wrap { max-width: 920px; margin: 0 auto; }
+    nav { font-size: .875rem; margin-bottom: 1.25rem; color: var(--muted); }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    header.card, section.outline, section.source {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem 1.35rem; margin-bottom: 1rem;
+    }
+    h1.page { font-size: 1.45rem; font-weight: 650; letter-spacing: -.02em; }
+    .path { margin-top: .4rem; font-size: .8rem; color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .badge {
+      display: inline-block; margin-top: .75rem; font-size: .7rem;
+      font-family: ui-monospace, Menlo, monospace; color: var(--accent);
+      border: 1px solid var(--border); border-radius: 999px; padding: .15rem .5rem;
+    }
+    .muted { color: var(--muted); font-size: .9rem; }
+    h2 { font-size: 1rem; margin-bottom: .75rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .04em; }
+    h1.extracted { font-size: 1.25rem; margin: .4rem 0 .6rem; }
+    h2.extracted { font-size: 1.05rem; margin: 1rem 0 .4rem; color: var(--text);
+      text-transform: none; letter-spacing: 0; }
+    h3.extracted { font-size: .95rem; margin: .75rem 0 .3rem; color: #c9d4e0; }
+    p.extracted { color: var(--muted); font-size: .9rem; margin: .35rem 0; }
+    pre {
+      background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 1rem; overflow: auto; max-height: 70vh; font-size: .78rem;
+      line-height: 1.45; color: #c9d1d9;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    details summary {
+      cursor: pointer; color: var(--accent); font-size: .9rem; margin-bottom: .75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a href="/archives/">← vault index</a>
+      · <a href="https://github.com/pterodactor3000/archives/blob/main/notes/empty-window-canvases/frontend-senior-gap-study-guide.canvas.tsx">GitHub source</a>
+    </nav>
+    <header class="card">
+      <h1 class="page">Frontend senior gap study guide</h1>
+      <p class="path">notes/empty-window-canvases/frontend-senior-gap-study-guide.canvas.tsx</p>
+      <span class="badge">canvas stand-in · not Cursor runtime</span>
+      <p class="muted" style="margin-top:.85rem">
+        Static HTML stand-in for browsing on GitHub Pages. Open the
+        <code style="color:var(--pink)">.canvas.tsx</code> in Cursor for the full canvas runtime.
+      </p>
+    </header>
+    <section class="outline"><h2>Extracted structure</h2><h1 class='extracted'>Frontend senior gap study guide</h1><h3 class='extracted'>Topics by phase</h3><p class='extracted'>Sources: TypeScript handbook, react.dev, vite.dev, MDN, OWASP, Vitest, Testing Library, Playwright, Turborepo, pnpm, Sentry docs, web.dev, Chrome Developers.</p><p class='extracted'>Overviews and how-tos for weaknesses from the JIT recruitment summary. All links point at official docs and standards bodies.</p><p class='extracted'>Progress persists in this canvas.</p><p class='extracted'>Changing ref.current does not re-render. Changing state does. Store interval IDs and DOM nodes in refs; store anything shown in the UI in state.</p><p class='extracted'>Prefer centralized sessions when architecture allows. Store ID in HttpOnly + Secure cookie. Defend CSRF. Prefer short-lived access tokens + refresh if using JWTs. Invalidate on login and high-risk events.</p></section>
+    <section class="source">
+      <details open>
+        <summary>Source (.canvas.tsx)</summary>
+        <pre>import {
+  Callout,
+  Card,
+  CardBody,
+  CardHeader,
+  Code,
+  CollapsibleSection,
+  Divider,
+  Grid,
+  H1,
+  H2,
+  H3,
+  Link,
+  Pill,
+  Row,
+  Stack,
+  Stat,
+  Text,
+  useCanvasState,
+  useHostTheme,
+} from &quot;cursor/canvas&quot;;
+
+type TopicId =
+  | &quot;typescript&quot;
+  | &quot;react-hooks&quot;
+  | &quot;hydration&quot;
+  | &quot;auth&quot;
+  | &quot;vite&quot;
+  | &quot;memory&quot;
+  | &quot;testing&quot;
+  | &quot;monorepo&quot;
+  | &quot;observability&quot;;
+
+type Topic = {
+  id: TopicId;
+  title: string;
+  phase: &quot;1 · Foundations&quot; | &quot;2 · Auth &amp; tooling&quot; | &quot;3 · Tests &amp; infra&quot;;
+  score: string;
+  why: string;
+  overview: string[];
+  howTo: { step: string; detail: string }[];
+  practice: string[];
+  docs: { label: string; href: string }[];
+};
+
+const TOPICS: Topic[] = [
+  {
+    id: &quot;typescript&quot;,
+    title: &quot;TypeScript fundamentals&quot;,
+    phase: &quot;1 · Foundations&quot;,
+    score: &quot;L3−&quot;,
+    why: &quot;Mixed up interfaces vs types, extension, unions — weakest area in the report.&quot;,
+    overview: [
+      &quot;TypeScript adds static types on top of JavaScript. Everyday types cover primitives, arrays, objects, unions, and type aliases.&quot;,
+      &quot;Interfaces describe object shapes. You extend them with extends. Type aliases can also describe objects and compose with intersections (&amp;).&quot;,
+      &quot;Interfaces can be re-opened (declaration merging). Type aliases cannot. Prefer interfaces for object shapes you may extend; type aliases for unions, tuples, and mapped helpers.&quot;,
+      &quot;Utility types Partial, Pick, Omit, and Record transform existing types. keyof produces a union of an object&#x27;s property names.&quot;,
+    ],
+    howTo: [
+      {
+        step: &quot;Read Everyday Types&quot;,
+        detail:
+          &quot;Work through typescriptlang.org handbook Everyday Types. Type every example in the playground until unions, aliases, and object types are automatic.&quot;,
+      },
+      {
+        step: &quot;Read Object Types + interfaces&quot;,
+        detail:
+          &quot;Study interface declaration, extends, optional/readonly fields, and how interfaces differ from type aliases for extensibility.&quot;,
+      },
+      {
+        step: &quot;Drill utility types&quot;,
+        detail:
+          &quot;Implement Partial / Pick / Omit / Record by hand once, then use the built-ins. Explain keyof T out loud.&quot;,
+      },
+      {
+        step: &quot;Interview drill&quot;,
+        detail:
+          &quot;Without notes: define User, extend AdminUser, make a Partial update payload, and a status union &#x27;idle&#x27; | &#x27;loading&#x27; | &#x27;error&#x27;.&quot;,
+      },
+    ],
+    practice: [
+      &quot;Rewrite a small JS module in .ts with no any.&quot;,
+      &quot;Create a discriminated union for API result { ok: true, data } | { ok: false, error }.&quot;,
+      &quot;Explain interface extends vs type A &amp; B in one minute.&quot;,
+    ],
+    docs: [
+      {
+        label: &quot;Everyday Types (handbook)&quot;,
+        href: &quot;https://www.typescriptlang.org/docs/handbook/2/everyday-types.html&quot;,
+      },
+      {
+        label: &quot;Object Types&quot;,
+        href: &quot;https://www.typescriptlang.org/docs/handbook/2/objects.html&quot;,
+      },
+      {
+        label: &quot;Narrowing&quot;,
+        href: &quot;https://www.typescriptlang.org/docs/handbook/2/narrowing.html&quot;,
+      },
+      {
+        label: &quot;Utility Types&quot;,
+        href: &quot;https://www.typescriptlang.org/docs/handbook/utility-types.html&quot;,
+      },
+      {
+        label: &quot;TypeScript Playground&quot;,
+        href: &quot;https://www.typescriptlang.org/play&quot;,
+      },
+    ],
+  },
+  {
+    id: &quot;react-hooks&quot;,
+    title: &quot;React hooks (useRef, useReducer)&quot;,
+    phase: &quot;1 · Foundations&quot;,
+    score: &quot;L3−&quot;,
+    why: &quot;Needed guidance on useRef / useReducer and fundamental React concepts.&quot;,
+    overview: [
+      &quot;useRef holds a mutable .current value that survives re-renders without triggering a re-render. Use it for DOM nodes, interval IDs, and other non-UI memory.&quot;,
+      &quot;Do not read or write ref.current during render (except careful initialization). Read/write in effects and event handlers.&quot;,
+      &quot;useReducer is for state that updates through named actions. You get [state, dispatch]. Prefer it when next state depends on complex previous state or many related fields.&quot;,
+      &quot;useEffect runs after paint for syncing with external systems. Always clean up subscriptions, timers, and listeners in the return function.&quot;,
+    ],
+    howTo: [
+      {
+        step: &quot;useRef reference page&quot;,
+        detail:
+          &quot;Read react.dev useRef. Build the stopwatch (interval in a ref + time in state) and an input focus example.&quot;,
+      },
+      {
+        step: &quot;useReducer + context pattern&quot;,
+        detail:
+          &quot;Follow Scaling Up with Reducer and Context. Convert a multi-field form or task list from several useState calls to one reducer.&quot;,
+      },
+      {
+        step: &quot;Contrast hooks aloud&quot;,
+        detail:
+          &quot;State = UI memory. Ref = non-UI memory. Reducer = structured updates. Effect = sync with outside world.&quot;,
+      },
+    ],
+    practice: [
+      &quot;Component: focus input on mount via ref.&quot;,
+      &quot;Component: undo/redo or multi-step wizard with useReducer.&quot;,
+      &quot;Find and fix a fake leak: setInterval without clearInterval in cleanup.&quot;,
+    ],
+    docs: [
+      {
+        label: &quot;useRef&quot;,
+        href: &quot;https://react.dev/reference/react/useRef&quot;,
+      },
+      {
+        label: &quot;useReducer&quot;,
+        href: &quot;https://react.dev/reference/react/useReducer&quot;,
+      },
+      {
+        label: &quot;useEffect&quot;,
+        href: &quot;https://react.dev/reference/react/useEffect&quot;,
+      },
+      {
+        label: &quot;Scaling Up with Reducer and Context&quot;,
+        href: &quot;https://react.dev/learn/scaling-up-with-reducer-and-context&quot;,
+      },
+      {
+        label: &quot;Referencing Values with Refs&quot;,
+        href: &quot;https://react.dev/learn/referencing-values-with-refs&quot;,
+      },
+    ],
+  },
+  {
+    id: &quot;hydration&quot;,
+    title: &quot;Hydration &amp; rendering strategies&quot;,
+    phase: &quot;1 · Foundations&quot;,
+    score: &quot;L3−&quot;,
+    why: &quot;Not familiar with hydration; only basic SPA/SSR/SSG awareness.&quot;,
+    overview: [
+      &quot;SPA: browser downloads JS, creates the DOM on the client (createRoot). Fast navigations after load; first paint waits on JS.&quot;,
+      &quot;SSR: server sends HTML for the first request. Client then hydrates — React attaches event handlers and state to that existing markup via hydrateRoot.&quot;,
+      &quot;SSG: HTML is generated at build time. Still hydrates on the client if interactive. Best for content that is known ahead of time.&quot;,
+      &quot;Hydration requires the client tree to match the server HTML. Mismatches (window checks, random IDs, different data) are bugs. Fix them; do not paper over casually.&quot;,
+    ],
+    howTo: [
+      {
+        step: &quot;Read hydrateRoot&quot;,
+        detail:
+          &quot;Study react.dev hydrateRoot: attach to server HTML, mismatch causes, two-pass client-only content with useEffect.&quot;,
+      },
+      {
+        step: &quot;Map strategies&quot;,
+        detail:
+          &quot;For a product page, a dashboard, and a blog post, pick SPA vs SSR vs SSG and justify with SEO, data freshness, and TTFB.&quot;,
+      },
+      {
+        step: &quot;Mismatch lab&quot;,
+        detail:
+          &quot;Intentionally render Date.now() on server and client; observe the warning; then fix with suppressHydrationWarning only where docs allow, or two-pass pattern.&quot;,
+      },
+    ],
+    practice: [
+      &quot;Draw the request path: HTML → JS download → hydrate → interactive.&quot;,
+      &quot;List three common hydration mismatch causes from the React docs.&quot;,
+      &quot;Explain when createRoot vs hydrateRoot is correct.&quot;,
+    ],
+    docs: [
+      {
+        label: &quot;hydrateRoot&quot;,
+        href: &quot;https://react.dev/reference/react-dom/client/hydrateRoot&quot;,
+      },
+      {
+        label: &quot;createRoot&quot;,
+        href: &quot;https://react.dev/reference/react-dom/client/createRoot&quot;,
+      },
+      {
+        label: &quot;react-dom/server&quot;,
+        href: &quot;https://react.dev/reference/react-dom/server&quot;,
+      },
+    ],
+  },
+  {
+    id: &quot;auth&quot;,
+    title: &quot;Authentication &amp; authorization&quot;,
+    phase: &quot;2 · Auth &amp; tooling&quot;,
+    score: &quot;JS gap&quot;,
+    why: &quot;Auth flow explanation lacked important details (interview JS weakness).&quot;,
+    overview: [
+      &quot;Authentication verifies identity (who you are). Authorization decides what that identity may do.&quot;,
+      &quot;After login, the site keeps a session. Centralized model: server stores session state; client gets a session ID (prefer HttpOnly Secure cookie).&quot;,
+      &quot;Decentralized model: server issues a signed token (often JWT). Client presents it; resource servers verify the signature. Harder to revoke — use short-lived access tokens + refresh tokens.&quot;,
+      &quot;Cookie sessions need CSRF defenses (SameSite plus tokens / fetch metadata). Tokens in localStorage are easier to steal via XSS — cookies with HttpOnly are preferred when possible.&quot;,
+      &quot;CORS is separate: it controls which origins browsers allow for cross-origin requests. Auth cookies on cross-site requests need careful SameSite / CORS credential setup.&quot;,
+    ],
+    howTo: [
+      {
+        step: &quot;MDN Authentication hub&quot;,
+        detail:
+          &quot;Read methods overview (passwords, OTP, federated, passkeys), then Session management end to end.&quot;,
+      },
+      {
+        step: &quot;Draw both models&quot;,
+        detail:
+          &quot;Diagram centralized session ID vs JWT access + refresh. Mark where revocation happens in each.&quot;,
+      },
+      {
+        step: &quot;CORS + cookies&quot;,
+        detail:
+          &quot;Read MDN CORS. Explain Access-Control-Allow-Credentials and why * origin cannot pair with credentials.&quot;,
+      },
+      {
+        step: &quot;Build a tiny flow&quot;,
+        detail:
+          &quot;Login form → server sets session cookie → protected route checks session → logout invalidates server session. Narrate every hop.&quot;,
+      },
+    ],
+    practice: [
+      &quot;One-minute answer: session cookie vs JWT access token.&quot;,
+      &quot;Name defenses for session hijacking and session fixation from MDN.&quot;,
+      &quot;Explain CSRF risk when session ID lives in a cookie.&quot;,
+    ],
+    docs: [
+      {
+        label: &quot;MDN Authentication&quot;,
+        href: &quot;https://developer.mozilla.org/en-US/docs/Web/Security/Authentication&quot;,
+      },
+      {
+        label: &quot;MDN Session management&quot;,
+        href: &quot;https://developer.mozilla.org/en-US/docs/Web/Security/Authentication/Session_management&quot;,
+      },
+      {
+        label: &quot;MDN CORS&quot;,
+        href: &quot;https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS&quot;,
+      },
+      {
+        label: &quot;OWASP Session Management Cheat Sheet&quot;,
+        href: &quot;https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html&quot;,
+      },
+      {
+        label: &quot;MDN CSRF&quot;,
+        href: &quot;https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/CSRF&quot;,
+      },
+    ],
+  },
+  {
+    id: &quot;vite&quot;,
+    title: &quot;Vite, tooling &amp; tree shaking&quot;,
+    phase: &quot;2 · Auth &amp; tooling&quot;,
+    score: &quot;JS gap&quot;,
+    why: &quot;Not familiar with Vite; tree shaking weaker than expected for senior.&quot;,
+    overview: [
+      &quot;Vite is a modern frontend build tool: native-ESM dev server with fast HMR, and a production bundler that outputs optimized static assets.&quot;,
+      &quot;Scaffold with npm create vite@latest (react-ts template). Scripts: vite (dev), vite build, vite preview.&quot;,
+      &quot;Tree shaking removes unused ESM exports from the production bundle. Prefer ES modules; avoid side-effectful modules unless marked correctly.&quot;,
+      &quot;import.meta.env.DEV / PROD and VITE_* env vars let you gate code so dead branches are eliminated in production builds.&quot;,
+      &quot;You already know Webpack — map concepts: entry, loaders/plugins ≈ Vite plugins, code splitting via dynamic import().&quot;,
+    ],
+    howTo: [
+      {
+        step: &quot;Scaffold Vite + React + TS&quot;,
+        detail:
+          &quot;Follow vite.dev Getting Started. Create react-ts app, run dev/build/preview, inspect dist/ output size.&quot;,
+      },
+      {
+        step: &quot;Env &amp; tree-shake demo&quot;,
+        detail:
+          &quot;Wrap debug logging in if (import.meta.env.DEV). Confirm it disappears from the production bundle.&quot;,
+      },
+      {
+        step: &quot;Code splitting&quot;,
+        detail:
+          &quot;Use dynamic import() for a route or heavy component. Verify a separate chunk in the build output.&quot;,
+      },
+      {
+        step: &quot;Contrast with Webpack&quot;,
+        detail:
+          &quot;Prepare a 60-second comparison: HMR model, config surface, ESM-first vs historical CommonJS bundling.&quot;,
+      },
+    ],
+    practice: [
+      &quot;Migrate a tiny Webpack demo mental model to Vite config (alias, env, proxy).&quot;,
+      &quot;Explain tree shaking requirements: ESM, no unexpected side effects.&quot;,
+      &quot;Show one dynamic import and name the chunk it creates.&quot;,
+    ],
+    docs: [
+      {
+        label: &quot;Vite Getting Started&quot;,
+        href: &quot;https://vite.dev/guide/&quot;,
+      },
+      {
+        label: &quot;Features (HMR, ESM)&quot;,
+        href: &quot;https://vite.dev/guide/features.html&quot;,
+      },
+      {
+        label: &quot;Env Variables and Modes&quot;,
+        href: &quot;https://vite.dev/guide/env-and-mode.html&quot;,
+      },
+      {
+        label: &quot;Building for Production&quot;,
+        href: &quot;https://vite.dev/guide/build.html&quot;,
+      },
+      {
+        label: &quot;Dep Pre-Bundling&quot;,
+        href: &quot;https://vite.dev/guide/dep-pre-bundling.html&quot;,
+      },
+    ],
+  },
+  {
+    id: &quot;memory&quot;,
+    title: &quot;Memory leaks&quot;,
+    phase: &quot;2 · Auth &amp; tooling&quot;,
+    score: &quot;JS gap&quot;,
+    why: &quot;Memory leaks knowledge weaker than expected for senior.&quot;,
+    overview: [
+      &quot;A memory leak is when the page keeps retaining memory that should have been released — usage climbs over time.&quot;,
+      &quot;Common frontend causes: detached DOM nodes still referenced from JS, uncleared timers/intervals, forgotten event listeners, closures holding large objects.&quot;,
+      &quot;Chrome DevTools: Task Manager for live usage, Performance with Memory checkbox for trends, Heap Snapshot for Detached nodes, Allocation Timeline for growing allocations.&quot;,
+      &quot;In React, always clear intervals/subscriptions in useEffect cleanup. Avoid storing DOM nodes in module-level variables.&quot;,
+    ],
+    howTo: [
+      {
+        step: &quot;Read Chrome memory guide&quot;,
+        detail:
+          &quot;Follow Fix memory problems on developer.chrome.com. Reproduce the detached DOM example and find it in a Heap Snapshot.&quot;,
+      },
+      {
+        step: &quot;Allocation Timeline&quot;,
+        detail:
+          &quot;Record while clicking a grow action. Blue bars that never get collected are leak candidates.&quot;,
+      },
+      {
+        step: &quot;React cleanup audit&quot;,
+        detail:
+          &quot;Scan your practice app for setInterval, addEventListener, WebSocket — every one needs a matching cleanup.&quot;,
+      },
+    ],
+    practice: [
+      &quot;Plant a leak (global array push on click), confirm in DevTools, then fix.&quot;,
+      &quot;Explain detached DOM in one sentence.&quot;,
+      &quot;Show useEffect cleanup that clears an interval.&quot;,
+    ],
+    docs: [
+      {
+        label: &quot;Fix memory problems (Chrome DevTools)&quot;,
+        href: &quot;https://developer.chrome.com/docs/devtools/memory-problems/&quot;,
+      },
+      {
+        label: &quot;Memory panel overview&quot;,
+        href: &quot;https://developer.chrome.com/docs/devtools/memory-inspector/&quot;,
+      },
+      {
+        label: &quot;React useEffect (cleanup)&quot;,
+        href: &quot;https://react.dev/reference/react/useEffect#connecting-to-an-external-system&quot;,
+      },
+    ],
+  },
+  {
+    id: &quot;testing&quot;,
+    title: &quot;Testing (unit → E2E → experiments)&quot;,
+    phase: &quot;3 · Tests &amp; infra&quot;,
+    score: &quot;L3&quot;,
+    why: &quot;Basics only; no A/B testing; limited broader process / user monitoring.&quot;,
+    overview: [
+      &quot;Unit tests: pure functions and small modules in isolation (Vitest).&quot;,
+      &quot;Component / integration tests: render UI, interact like a user (Testing Library + user-event). Guiding principle: tests that resemble usage give more confidence.&quot;,
+      &quot;E2E: real browser flows across the app (Playwright). Fewer of these; cover critical paths.&quot;,
+      &quot;A/B testing is product experimentation: split users into variants, measure a primary metric, ship the winner. Not a unit-test tool — know the vocabulary for interviews.&quot;,
+      &quot;User monitoring closes the loop: errors (Sentry) + Core Web Vitals (LCP, INP, CLS) in the field.&quot;,
+    ],
+    howTo: [
+      {
+        step: &quot;Vitest setup&quot;,
+        detail:
+          &quot;npm i -D vitest. Write sum.test.ts, add \&quot;test\&quot;: \&quot;vitest\&quot;. Focus assertions on observable contracts, not internals.&quot;,
+      },
+      {
+        step: &quot;React Testing Library&quot;,
+        detail:
+          &quot;render + screen + userEvent. Prefer getByRole / getByLabelText. Arrange → Act → Assert.&quot;,
+      },
+      {
+        step: &quot;Playwright E2E&quot;,
+        detail:
+          &quot;npm init playwright@latest. Write one login or checkout-happy-path test with getByRole.&quot;,
+      },
+      {
+        step: &quot;A/B vocabulary&quot;,
+        detail:
+          &quot;Be ready to define: hypothesis, control vs variant, primary metric, sample size / duration, feature flag as delivery mechanism. Tie outcomes to analytics or Web Vitals.&quot;,
+      },
+    ],
+    practice: [
+      &quot;Unit test a typed price calculator.&quot;,
+      &quot;Component test: form validation with user-event.&quot;,
+      &quot;One Playwright test for the critical path of your practice app.&quot;,
+      &quot;Explain testing pyramid vs Testing Library philosophy in 90 seconds.&quot;,
+    ],
+    docs: [
+      {
+        label: &quot;Vitest Getting Started&quot;,
+        href: &quot;https://vitest.dev/guide/&quot;,
+      },
+      {
+        label: &quot;Vitest Writing Tests&quot;,
+        href: &quot;https://vitest.dev/guide/learn/writing-tests&quot;,
+      },
+      {
+        label: &quot;React Testing Library intro&quot;,
+        href: &quot;https://testing-library.com/docs/react-testing-library/intro/&quot;,
+      },
+      {
+        label: &quot;Testing Library guiding principles&quot;,
+        href: &quot;https://testing-library.com/docs/guiding-principles/&quot;,
+      },
+      {
+        label: &quot;Playwright intro&quot;,
+        href: &quot;https://playwright.dev/docs/intro&quot;,
+      },
+      {
+        label: &quot;user-event&quot;,
+        href: &quot;https://testing-library.com/docs/user-event/intro&quot;,
+      },
+    ],
+  },
+  {
+    id: &quot;monorepo&quot;,
+    title: &quot;Monorepo tooling&quot;,
+    phase: &quot;3 · Tests &amp; infra&quot;,
+    score: &quot;L3&quot;,
+    why: &quot;No practical monorepo tooling experience.&quot;,
+    overview: [
+      &quot;A monorepo holds multiple packages/apps in one git repo with shared tooling and local package links.&quot;,
+      &quot;pnpm workspaces (or npm/yarn workspaces) define which folders are packages and how they depend on each other.&quot;,
+      &quot;Turborepo orchestrates tasks (build, test, lint) with a dependency graph, caching, and ^build-style package ordering.&quot;,
+      &quot;Typical layout: apps/web, apps/api, packages/ui, packages/tsconfig — one shared Button used by multiple apps.&quot;,
+    ],
+    howTo: [
+      {
+        step: &quot;Scaffold with create-turbo&quot;,
+        detail:
+          &quot;Use the official create-turbo flow from turborepo.dev. Explore apps/ and packages/, run turbo build.&quot;,
+      },
+      {
+        step: &quot;Read turbo.json tasks&quot;,
+        detail:
+          &quot;Define build with dependsOn: [\&quot;^build\&quot;], outputs for dist, and a persistent uncached dev task.&quot;,
+      },
+      {
+        step: &quot;Add a shared package&quot;,
+        detail:
+          &quot;Create packages/utils with a typed helper. Depend on it from an app via workspace protocol. Rebuild and confirm cache hits on second run.&quot;,
+      },
+    ],
+    practice: [
+      &quot;Explain why ^build runs dependencies first.&quot;,
+      &quot;Name what remote caching buys a team (without claiming you&#x27;ve run a huge fleet).&quot;,
+      &quot;Sketch folder layout for web + shared UI package.&quot;,
+    ],
+    docs: [
+      {
+        label: &quot;Turborepo docs&quot;,
+        href: &quot;https://turborepo.dev/docs&quot;,
+      },
+      {
+        label: &quot;Crafting your repository&quot;,
+        href: &quot;https://turborepo.dev/docs/crafting-your-repository/structuring-a-repository&quot;,
+      },
+      {
+        label: &quot;turbo.json configuration&quot;,
+        href: &quot;https://turborepo.dev/docs/reference/configuration&quot;,
+      },
+      {
+        label: &quot;pnpm Workspaces&quot;,
+        href: &quot;https://pnpm.io/workspaces&quot;,
+      },
+    ],
+  },
+  {
+    id: &quot;observability&quot;,
+    title: &quot;Observability &amp; user monitoring&quot;,
+    phase: &quot;3 · Tests &amp; infra&quot;,
+    score: &quot;L3&quot;,
+    why: &quot;Limited knowledge of observability / monitoring / advanced deploy awareness.&quot;,
+    overview: [
+      &quot;Frontend observability = knowing what users hit in production: errors, performance, and key user flows.&quot;,
+      &quot;Error monitoring (Sentry React SDK): init early with DSN, capture uncaught/boundary errors, optionally Session Replay and tracing.&quot;,
+      &quot;Core Web Vitals (web.dev): LCP (loading ≤2.5s), INP (interactivity ≤200ms), CLS (stability ≤0.1) at the 75th percentile.&quot;,
+      &quot;Measure in the field with the web-vitals library; lab tools (Lighthouse/DevTools) help during development but do not replace RUM.&quot;,
+      &quot;Deploy basics to discuss: health checks, rollback, preview environments — pair with whatever host you already use (Docker/CI experience noted as a strength).&quot;,
+    ],
+    howTo: [
+      {
+        step: &quot;Sentry React guide&quot;,
+        detail:
+          &quot;Install @sentry/react, create instrument file, import it first in the entry. Wire Error Boundary / React 19 error hooks per docs.&quot;,
+      },
+      {
+        step: &quot;Web Vitals&quot;,
+        detail:
+          &quot;Read web.dev Web Vitals. Add onLCP / onINP / onCLS and send metrics to an analytics endpoint (or console in practice).&quot;,
+      },
+      {
+        step: &quot;Connect the story&quot;,
+        detail:
+          &quot;Interview answer: alert on error rate spike → Sentry issue → reproduce → fix → watch LCP/INP after deploy.&quot;,
+      },
+    ],
+    practice: [
+      &quot;Throw a handled error and confirm it appears in Sentry (or SDK console transport in local practice).&quot;,
+      &quot;Name the three Core Web Vitals and their thresholds from memory.&quot;,
+      &quot;Describe rollback criteria for a bad frontend release.&quot;,
+    ],
+    docs: [
+      {
+        label: &quot;Sentry React SDK&quot;,
+        href: &quot;https://docs.sentry.io/platforms/javascript/guides/react/&quot;,
+      },
+      {
+        label: &quot;Sentry React Error Boundary&quot;,
+        href: &quot;https://docs.sentry.io/platforms/javascript/guides/react/features/error-boundary/&quot;,
+      },
+      {
+        label: &quot;Web Vitals (web.dev)&quot;,
+        href: &quot;https://web.dev/articles/vitals&quot;,
+      },
+      {
+        label: &quot;web-vitals library&quot;,
+        href: &quot;https://github.com/GoogleChrome/web-vitals&quot;,
+      },
+      {
+        label: &quot;Chrome UX Report&quot;,
+        href: &quot;https://developer.chrome.com/docs/crux&quot;,
+      },
+    ],
+  },
+];
+
+const PHASES = [
+  &quot;1 · Foundations&quot;,
+  &quot;2 · Auth &amp; tooling&quot;,
+  &quot;3 · Tests &amp; infra&quot;,
+] as const;
+
+function DocLinks({ docs }: { docs: Topic[&quot;docs&quot;] }) {
+  return (
+    &lt;Stack gap={6}&gt;
+      {docs.map((d) =&gt; (
+        &lt;div key={d.href}&gt;
+          &lt;Text size=&quot;small&quot;&gt;
+            &lt;Link href={d.href}&gt;{d.label}&lt;/Link&gt;
+          &lt;/Text&gt;
+        &lt;/div&gt;
+      ))}
+    &lt;/Stack&gt;
+  );
+}
+
+function TopicPanel({ topic }: { topic: Topic }) {
+  const theme = useHostTheme();
+
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;Row gap={8} align=&quot;center&quot; wrap&gt;
+        &lt;H2&gt;{topic.title}&lt;/H2&gt;
+        &lt;Pill size=&quot;sm&quot; active&gt;
+          {topic.score}
+        &lt;/Pill&gt;
+        &lt;Pill size=&quot;sm&quot;&gt;{topic.phase}&lt;/Pill&gt;
+      &lt;/Row&gt;
+
+      &lt;Callout tone=&quot;warning&quot; title=&quot;Why this topic&quot;&gt;
+        {topic.why}
+      &lt;/Callout&gt;
+
+      &lt;Card&gt;
+        &lt;CardHeader&gt;Overview&lt;/CardHeader&gt;
+        &lt;CardBody&gt;
+          &lt;Stack gap={8}&gt;
+            {topic.overview.map((line) =&gt; (
+              &lt;div key={line}&gt;
+                &lt;Text&gt;{line}&lt;/Text&gt;
+              &lt;/div&gt;
+            ))}
+          &lt;/Stack&gt;
+        &lt;/CardBody&gt;
+      &lt;/Card&gt;
+
+      &lt;Card&gt;
+        &lt;CardHeader&gt;How to learn it&lt;/CardHeader&gt;
+        &lt;CardBody&gt;
+          &lt;Stack gap={12}&gt;
+            {topic.howTo.map((item, i) =&gt; (
+              &lt;div key={item.step}&gt;
+                &lt;Stack gap={4}&gt;
+                  &lt;Text weight=&quot;semibold&quot;&gt;
+                    {i + 1}. {item.step}
+                  &lt;/Text&gt;
+                  &lt;Text tone=&quot;secondary&quot; size=&quot;small&quot;&gt;
+                    {item.detail}
+                  &lt;/Text&gt;
+                &lt;/Stack&gt;
+              &lt;/div&gt;
+            ))}
+          &lt;/Stack&gt;
+        &lt;/CardBody&gt;
+      &lt;/Card&gt;
+
+      &lt;Grid columns={2} gap={16}&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;Practice until you can teach it&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Stack gap={8}&gt;
+              {topic.practice.map((p) =&gt; (
+                &lt;div key={p}&gt;
+                  &lt;Text size=&quot;small&quot;&gt;• {p}&lt;/Text&gt;
+                &lt;/div&gt;
+              ))}
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+        &lt;Card&gt;
+          &lt;CardHeader&gt;Official docs only&lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;DocLinks docs={topic.docs} /&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+      &lt;/Grid&gt;
+
+      &lt;div
+        style={{
+          background: theme.fill.tertiary,
+          borderRadius: 8,
+          padding: 12,
+        }}
+      &gt;
+        &lt;Text size=&quot;small&quot; tone=&quot;secondary&quot;&gt;
+          Sources: TypeScript handbook, react.dev, vite.dev, MDN, OWASP, Vitest,
+          Testing Library, Playwright, Turborepo, pnpm, Sentry docs, web.dev,
+          Chrome Developers.
+        &lt;/Text&gt;
+      &lt;/div&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+export default function FrontendSeniorGapStudyGuide() {
+  const theme = useHostTheme();
+  const [topicId, setTopicId] = useCanvasState&lt;TopicId&gt;(
+    &quot;topicId&quot;,
+    &quot;typescript&quot;,
+  );
+  const [done, setDone] = useCanvasState&lt;Record&lt;string, boolean&gt;&gt;(
+    &quot;doneTopics&quot;,
+    {},
+  );
+
+  const topic = TOPICS.find((t) =&gt; t.id === topicId) ?? TOPICS[0];
+  const doneCount = TOPICS.filter((t) =&gt; done[t.id]).length;
+
+  return (
+    &lt;Stack gap={24} style={{ maxWidth: 1100, margin: &quot;0 auto&quot;, padding: 24 }}&gt;
+      &lt;div
+        style={{
+          background: theme.fill.secondary,
+          borderRadius: 8,
+          padding: 20,
+        }}
+      &gt;
+        &lt;Stack gap={8}&gt;
+          &lt;H1&gt;Frontend senior gap study guide&lt;/H1&gt;
+          &lt;Text tone=&quot;secondary&quot;&gt;
+            Overviews and how-tos for weaknesses from the JIT recruitment
+            summary. All links point at official docs and standards bodies.
+          &lt;/Text&gt;
+        &lt;/Stack&gt;
+      &lt;/div&gt;
+
+      &lt;Grid columns={4} gap={12}&gt;
+        &lt;Stat value=&quot;9&quot; label=&quot;Topics&quot; tone=&quot;info&quot; /&gt;
+        &lt;Stat value={`${doneCount}/9`} label=&quot;Marked done&quot; /&gt;
+        &lt;Stat value=&quot;L3−&quot; label=&quot;Worst scores (TS / React)&quot; tone=&quot;danger&quot; /&gt;
+        &lt;Stat value=&quot;8–12w&quot; label=&quot;Suggested plan window&quot; tone=&quot;warning&quot; /&gt;
+      &lt;/Grid&gt;
+
+      &lt;Callout tone=&quot;info&quot; title=&quot;How to use this canvas&quot;&gt;
+        Pick a topic below. Read overview, follow how-to steps against the
+        official links, complete practice, then mark done. Order: Foundations →
+        Auth &amp; tooling → Tests &amp; infra.
+      &lt;/Callout&gt;
+
+      &lt;Stack gap={10}&gt;
+        &lt;H3&gt;Topics by phase&lt;/H3&gt;
+        {PHASES.map((phase) =&gt; (
+          &lt;div key={phase}&gt;
+            &lt;Stack gap={8}&gt;
+              &lt;Text weight=&quot;semibold&quot; size=&quot;small&quot; tone=&quot;secondary&quot;&gt;
+                {phase}
+              &lt;/Text&gt;
+              &lt;Row gap={8} wrap&gt;
+                {TOPICS.filter((t) =&gt; t.phase === phase).map((t) =&gt; (
+                  &lt;div key={t.id}&gt;
+                    &lt;Pill
+                      active={topicId === t.id}
+                      onClick={() =&gt; setTopicId(t.id)}
+                    &gt;
+                      {done[t.id] ? &quot;done · &quot; : &quot;&quot;}
+                      {t.title}
+                    &lt;/Pill&gt;
+                  &lt;/div&gt;
+                ))}
+              &lt;/Row&gt;
+            &lt;/Stack&gt;
+          &lt;/div&gt;
+        ))}
+      &lt;/Stack&gt;
+
+      &lt;Divider /&gt;
+
+      &lt;TopicPanel topic={topic} /&gt;
+
+      &lt;Row gap={8} align=&quot;center&quot;&gt;
+        &lt;Pill
+          active={!!done[topic.id]}
+          onClick={() =&gt;
+            setDone((prev) =&gt; ({
+              ...prev,
+              [topic.id]: !prev[topic.id],
+            }))
+          }
+        &gt;
+          {done[topic.id] ? &quot;Done — click to undo&quot; : &quot;Mark topic done&quot;}
+        &lt;/Pill&gt;
+        &lt;Text size=&quot;small&quot; tone=&quot;tertiary&quot;&gt;
+          Progress persists in this canvas.
+        &lt;/Text&gt;
+      &lt;/Row&gt;
+
+      &lt;Divider /&gt;
+
+      &lt;CollapsibleSection title=&quot;Quick reference cheat cards&quot; defaultOpen={false}&gt;
+        &lt;Stack gap={12}&gt;
+          &lt;Card&gt;
+            &lt;CardHeader trailing={&lt;Pill size=&quot;sm&quot;&gt;TypeScript&lt;/Pill&gt;}&gt;
+              Interface vs type
+            &lt;/CardHeader&gt;
+            &lt;CardBody&gt;
+              &lt;Code&gt;
+                {`interface Animal { name: string }
+interface Bear extends Animal { honey: boolean }
+
+type AnimalT = { name: string }
+type BearT = AnimalT &amp; { honey: boolean }`}
+              &lt;/Code&gt;
+            &lt;/CardBody&gt;
+          &lt;/Card&gt;
+          &lt;Card&gt;
+            &lt;CardHeader trailing={&lt;Pill size=&quot;sm&quot;&gt;React&lt;/Pill&gt;}&gt;
+              useRef vs useState
+            &lt;/CardHeader&gt;
+            &lt;CardBody&gt;
+              &lt;Text size=&quot;small&quot;&gt;
+                Changing &lt;Code&gt;ref.current&lt;/Code&gt; does not re-render. Changing
+                state does. Store interval IDs and DOM nodes in refs; store
+                anything shown in the UI in state.
+              &lt;/Text&gt;
+            &lt;/CardBody&gt;
+          &lt;/Card&gt;
+          &lt;Card&gt;
+            &lt;CardHeader trailing={&lt;Pill size=&quot;sm&quot;&gt;Auth&lt;/Pill&gt;}&gt;
+              Session checklist (MDN)
+            &lt;/CardHeader&gt;
+            &lt;CardBody&gt;
+              &lt;Text size=&quot;small&quot;&gt;
+                Prefer centralized sessions when architecture allows. Store ID
+                in HttpOnly + Secure cookie. Defend CSRF. Prefer short-lived
+                access tokens + refresh if using JWTs. Invalidate on login and
+                high-risk events.
+              &lt;/Text&gt;
+            &lt;/CardBody&gt;
+          &lt;/Card&gt;
+          &lt;Card&gt;
+            &lt;CardHeader trailing={&lt;Pill size=&quot;sm&quot;&gt;Vite&lt;/Pill&gt;}&gt;
+              Tree-shake gate
+            &lt;/CardHeader&gt;
+            &lt;CardBody&gt;
+              &lt;Code&gt;
+                {`if (import.meta.env.DEV) {
+  // dropped from production builds
+  console.log(&quot;Dev mode&quot;)
+}`}
+              &lt;/Code&gt;
+            &lt;/CardBody&gt;
+          &lt;/Card&gt;
+        &lt;/Stack&gt;
+      &lt;/CollapsibleSection&gt;
+
+      &lt;CollapsibleSection title=&quot;Suggested weekly order&quot; defaultOpen={false}&gt;
+        &lt;TableLike /&gt;
+      &lt;/CollapsibleSection&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function TableLike() {
+  return (
+    &lt;Stack gap={8} style={{ paddingTop: 8 }}&gt;
+      &lt;Text size=&quot;small&quot;&gt;
+        &lt;Text weight=&quot;semibold&quot;&gt;Weeks 1–3:&lt;/Text&gt; TypeScript → React hooks →
+        Hydration
+      &lt;/Text&gt;
+      &lt;Text size=&quot;small&quot;&gt;
+        &lt;Text weight=&quot;semibold&quot;&gt;Weeks 4–6:&lt;/Text&gt; Auth → Vite/tree shaking →
+        Memory leaks
+      &lt;/Text&gt;
+      &lt;Text size=&quot;small&quot;&gt;
+        &lt;Text weight=&quot;semibold&quot;&gt;Weeks 7–9:&lt;/Text&gt; Testing → Monorepo →
+        Observability
+      &lt;/Text&gt;
+      &lt;Text size=&quot;small&quot;&gt;
+        &lt;Text weight=&quot;semibold&quot;&gt;Weeks 10–12:&lt;/Text&gt; Side project that forces all
+        three layers + mock interviews from these overviews
+      &lt;/Text&gt;
+    &lt;/Stack&gt;
+  );
+}
+</pre>
+      </details>
+    </section>
+  </div>
+</body>
+</html>

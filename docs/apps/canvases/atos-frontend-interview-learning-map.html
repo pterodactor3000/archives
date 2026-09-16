@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Senior Frontend Interview Learning Map · canvas</title>
+  <style>
+    :root {
+      --bg: #0b0f14; --surface: #12181f; --border: #243041;
+      --text: #d7e0ea; --muted: #8b9aab; --accent: #5cdb95;
+      --code-bg: #0a0e13; --pink: #ff7b72;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif;
+      line-height: 1.55; padding: 1.5rem 1rem 3rem;
+    }
+    .wrap { max-width: 920px; margin: 0 auto; }
+    nav { font-size: .875rem; margin-bottom: 1.25rem; color: var(--muted); }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    header.card, section.outline, section.source {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem 1.35rem; margin-bottom: 1rem;
+    }
+    h1.page { font-size: 1.45rem; font-weight: 650; letter-spacing: -.02em; }
+    .path { margin-top: .4rem; font-size: .8rem; color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .badge {
+      display: inline-block; margin-top: .75rem; font-size: .7rem;
+      font-family: ui-monospace, Menlo, monospace; color: var(--accent);
+      border: 1px solid var(--border); border-radius: 999px; padding: .15rem .5rem;
+    }
+    .muted { color: var(--muted); font-size: .9rem; }
+    h2 { font-size: 1rem; margin-bottom: .75rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .04em; }
+    h1.extracted { font-size: 1.25rem; margin: .4rem 0 .6rem; }
+    h2.extracted { font-size: 1.05rem; margin: 1rem 0 .4rem; color: var(--text);
+      text-transform: none; letter-spacing: 0; }
+    h3.extracted { font-size: .95rem; margin: .75rem 0 .3rem; color: #c9d4e0; }
+    p.extracted { color: var(--muted); font-size: .9rem; margin: .35rem 0; }
+    pre {
+      background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 1rem; overflow: auto; max-height: 70vh; font-size: .78rem;
+      line-height: 1.45; color: #c9d1d9;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    details summary {
+      cursor: pointer; color: var(--accent); font-size: .9rem; margin-bottom: .75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a href="/archives/">← vault index</a>
+      · <a href="https://github.com/pterodactor3000/archives/blob/main/notes/empty-window-canvases/atos-frontend-interview-learning-map.canvas.tsx">GitHub source</a>
+    </nav>
+    <header class="card">
+      <h1 class="page">Senior Frontend Interview Learning Map</h1>
+      <p class="path">notes/empty-window-canvases/atos-frontend-interview-learning-map.canvas.tsx</p>
+      <span class="badge">canvas stand-in · not Cursor runtime</span>
+      <p class="muted" style="margin-top:.85rem">
+        Static HTML stand-in for browsing on GitHub Pages. Open the
+        <code style="color:var(--pink)">.canvas.tsx</code> in Cursor for the full canvas runtime.
+      </p>
+    </header>
+    <section class="outline"><h2>Extracted structure</h2><h1 class='extracted'>Senior Frontend Interview Learning Map</h1><h2 class='extracted'>Core frontend</h2><h2 class='extracted'>Delivery, observability, and scale</h2><h2 class='extracted'>Collaboration and technical leadership</h2><h2 class='extracted'>Nice to have — know the shape, not every API</h2><h3 class='extracted'>Research basis</h3><p class='extracted'>React, Azure, delivery, scale, and leadership. Read core topics first; skim nice-to-haves only after you can explain the production concerns.</p><p class='extracted'>State user impact, business goal, and constraints.</p><p class='extracted'>Name telemetry, logs, profiler output, or test evidence.</p><p class='extracted'>Explain solution, trade-off, and why simpler options fail.</p><p class='extracted'>Define success metric, rollout, rollback, and follow-up.</p><p class='extracted'>React renders UI from props, state, and context; a component render does not automatically mean a browser DOM update. Use effects to synchronize with systems outside React, such as subscriptions, timers, network requests, or browser APIs, and clean them up when appropriate. Do not use an effect for data that can be derived during render.</p><p class='extracted'>Profile before optimizing. memo</p><p class='extracted'>For a live event screen, separate server data from local UI state, update only changed records, virtualize large lists, and define reconnect, stale-data, loading, and error behavior. Use SSR or SSG for content that benefits from fast first render and SEO; use client-side live updates for changing event data.</p><p class='extracted'>Use strict TypeScript to make invalid states harder to represent and to catch mistakes before runtime. Prefer unknown</p><p class='extracted'>Model asynchronous UI with discriminated unions such as loading, success, empty, and error states. Narrow using a stable literal field like status</p><p class='extracted'>In an interview, connect types to outcomes: safer refactoring, clearer component contracts, fewer integration defects, and faster reviews. Avoid claiming that a complicated type is automatically good; readability and useful errors matter more than type cleverness.</p><p class='extracted'>Start with semantic HTML because it gives accessibility, keyboard support, and predictable browser behavior for free. Use native controls before ARIA, then add ARIA only when a native element cannot express the interaction. Test keyboard flows, focus order, labels, errors, and responsive layouts.</p></section>
+    <section class="source">
+      <details open>
+        <summary>Source (.canvas.tsx)</summary>
+        <pre>import {
+  Callout,
+  Card,
+  CardBody,
+  CardHeader,
+  CollapsibleSection,
+  Divider,
+  Grid,
+  H1,
+  H2,
+  H3,
+  Link,
+  Row,
+  Stack,
+  Stat,
+  Text,
+  useHostTheme,
+} from &quot;cursor/canvas&quot;;
+
+export default function AtosFrontendInterviewLearningMap() {
+  const theme = useHostTheme();
+
+  return (
+    &lt;Stack gap={24} style={{ maxWidth: 1120, margin: &quot;0 auto&quot;, padding: 24 }}&gt;
+      &lt;div
+        style={{
+          background: theme.fill.secondary,
+          borderRadius: 8,
+          padding: 20,
+        }}
+      &gt;
+        &lt;Stack gap={8}&gt;
+          &lt;H1&gt;Senior Frontend Interview Learning Map&lt;/H1&gt;
+          &lt;Text tone=&quot;secondary&quot;&gt;
+            React, Azure, delivery, scale, and leadership. Read core topics first;
+            skim nice-to-haves only after you can explain the production concerns.
+          &lt;/Text&gt;
+        &lt;/Stack&gt;
+      &lt;/div&gt;
+
+      &lt;Grid columns={3} gap={16}&gt;
+        &lt;Stat value=&quot;5&quot; label=&quot;Core frontend topics&quot; tone=&quot;info&quot; /&gt;
+        &lt;Stat value=&quot;6&quot; label=&quot;Delivery and scale topics&quot; tone=&quot;warning&quot; /&gt;
+        &lt;Stat value=&quot;6&quot; label=&quot;Nice-to-have topics&quot; /&gt;
+      &lt;/Grid&gt;
+
+      &lt;Card&gt;
+        &lt;CardHeader&gt;Senior answer pattern&lt;/CardHeader&gt;
+        &lt;CardBody&gt;
+          &lt;Grid columns={4} gap={16}&gt;
+            &lt;Stack gap={4}&gt;
+              &lt;Text weight=&quot;semibold&quot;&gt;1. Frame&lt;/Text&gt;
+              &lt;Text size=&quot;small&quot; tone=&quot;secondary&quot;&gt;
+                State user impact, business goal, and constraints.
+              &lt;/Text&gt;
+            &lt;/Stack&gt;
+            &lt;Stack gap={4}&gt;
+              &lt;Text weight=&quot;semibold&quot;&gt;2. Measure&lt;/Text&gt;
+              &lt;Text size=&quot;small&quot; tone=&quot;secondary&quot;&gt;
+                Name telemetry, logs, profiler output, or test evidence.
+              &lt;/Text&gt;
+            &lt;/Stack&gt;
+            &lt;Stack gap={4}&gt;
+              &lt;Text weight=&quot;semibold&quot;&gt;3. Choose&lt;/Text&gt;
+              &lt;Text size=&quot;small&quot; tone=&quot;secondary&quot;&gt;
+                Explain solution, trade-off, and why simpler options fail.
+              &lt;/Text&gt;
+            &lt;/Stack&gt;
+            &lt;Stack gap={4}&gt;
+              &lt;Text weight=&quot;semibold&quot;&gt;4. Verify&lt;/Text&gt;
+              &lt;Text size=&quot;small&quot; tone=&quot;secondary&quot;&gt;
+                Define success metric, rollout, rollback, and follow-up.
+              &lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/Grid&gt;
+        &lt;/CardBody&gt;
+      &lt;/Card&gt;
+
+      &lt;Callout tone=&quot;info&quot; title=&quot;Tonight&#x27;s target&quot;&gt;
+        You do not need every tool memorized. You need to explain how you would
+        diagnose, make a safe change, measure impact, and collaborate with DevOps.
+      &lt;/Callout&gt;
+
+      &lt;Stack gap={12}&gt;
+        &lt;H2&gt;Core frontend&lt;/H2&gt;
+
+        &lt;CollapsibleSection title=&quot;React&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              React renders UI from props, state, and context; a component render
+              does not automatically mean a browser DOM update. Use effects to
+              synchronize with systems outside React, such as subscriptions, timers,
+              network requests, or browser APIs, and clean them up when appropriate.
+              Do not use an effect for data that can be derived during render.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Profile before optimizing. &lt;Text as=&quot;span&quot; weight=&quot;semibold&quot;&gt;memo&lt;/Text&gt;{&quot; &quot;}
+              can skip an expensive child render only when its props are stable;
+              &lt;Text as=&quot;span&quot; weight=&quot;semibold&quot;&gt; useMemo&lt;/Text&gt; caches a calculation;
+              and &lt;Text as=&quot;span&quot; weight=&quot;semibold&quot;&gt; useCallback&lt;/Text&gt; stabilizes a
+              function reference. These are performance tools, not correctness tools,
+              and missing dependencies create stale values.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              For a live event screen, separate server data from local UI state, update
+              only changed records, virtualize large lists, and define reconnect,
+              stale-data, loading, and error behavior. Use SSR or SSG for content that
+              benefits from fast first render and SEO; use client-side live updates for
+              changing event data.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;TypeScript&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Use strict TypeScript to make invalid states harder to represent and to
+              catch mistakes before runtime. Prefer &lt;Text as=&quot;span&quot; weight=&quot;semibold&quot;&gt;unknown&lt;/Text&gt;{&quot; &quot;}
+              over &lt;Text as=&quot;span&quot; weight=&quot;semibold&quot;&gt;any&lt;/Text&gt; at API boundaries, then
+              validate and narrow data before use. TypeScript types are erased at
+              runtime, so they do not prove an API or WebSocket payload is valid.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Model asynchronous UI with discriminated unions such as loading, success,
+              empty, and error states. Narrow using a stable literal field like{&quot; &quot;}
+              &lt;Text as=&quot;span&quot; weight=&quot;semibold&quot;&gt;status&lt;/Text&gt;, then use exhaustive
+              switches with &lt;Text as=&quot;span&quot; weight=&quot;semibold&quot;&gt;never&lt;/Text&gt; so a new state
+              causes a compile-time failure. Use generics when a reusable component or
+              API utility must preserve its caller&#x27;s type information.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              In an interview, connect types to outcomes: safer refactoring, clearer
+              component contracts, fewer integration defects, and faster reviews. Avoid
+              claiming that a complicated type is automatically good; readability and
+              useful errors matter more than type cleverness.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;HTML, CSS, and JavaScript&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Start with semantic HTML because it gives accessibility, keyboard support,
+              and predictable browser behavior for free. Use native controls before ARIA,
+              then add ARIA only when a native element cannot express the interaction.
+              Test keyboard flows, focus order, labels, errors, and responsive layouts.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Know Flexbox for one-dimensional alignment, Grid for two-dimensional
+              layouts, and CSS containment or reserved dimensions when preventing layout
+              shift matters. Avoid specificity wars by using a consistent component and
+              token strategy. Optimize images, fonts, and layout stability before
+              reaching for JavaScript fixes.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              In JavaScript, understand the event loop, promises, cancellation,
+              debouncing versus throttling, immutability, and reference equality. These
+              concepts explain common production issues: race conditions, stale UI,
+              blocked interactions, and unexpected React rerenders.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;Frontend architecture&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Organize code around features or domains so ownership and change impact are
+              obvious. Keep rendering, API access, domain rules, and shared design-system
+              primitives separated enough that a change in one does not require rewriting
+              the others. A good architecture makes common change easy rather than making
+              every hypothetical future change abstract.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Define data ownership deliberately: server state, ephemeral component state,
+              URL state, and cross-page client state have different lifecycles. Keep
+              failure, loading, empty, permission, and offline states explicit. Expose
+              typed APIs at boundaries and prevent UI components from knowing transport
+              details where possible.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Explain architecture with trade-offs. A small team may prefer a simple
+              feature-folder structure; a large platform may need stricter package
+              boundaries, a design system, observability conventions, and documented
+              ownership. Start from actual requirements, not a favorite pattern.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;Code quality and testing&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Quality standards should make safe behavior the easy default: strict types,
+              linting, formatting, small focused pull requests, accessible components,
+              and predictable error handling. Automate mechanical feedback so human
+              reviews focus on correctness, security, performance, and product impact.
+              Make standards visible in repository configuration and PR guidance.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Use unit tests for pure logic and component behavior, integration tests for
+              real feature boundaries, and a small number of end-to-end tests for critical
+              user journeys. Test behavior users rely on rather than implementation
+              details. Treat flaky tests as product risk because they weaken trust in the
+              delivery pipeline.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Storybook is useful when a component library needs isolated development,
+              visual review, and documented states. It does not replace integration
+              testing because production wiring, data behavior, and navigation still need
+              coverage.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;Row gap={14} wrap&gt;
+          &lt;Link href=&quot;https://react.dev/learn/you-might-not-need-an-effect&quot;&gt;
+            React effects
+          &lt;/Link&gt;
+          &lt;Link href=&quot;https://react.dev/reference/react/memo&quot;&gt;React memoization&lt;/Link&gt;
+          &lt;Link href=&quot;https://www.typescriptlang.org/docs/handbook/2/narrowing.html&quot;&gt;
+            TypeScript narrowing
+          &lt;/Link&gt;
+          &lt;Link href=&quot;https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Accessibility&quot;&gt;
+            MDN accessibility
+          &lt;/Link&gt;
+        &lt;/Row&gt;
+      &lt;/Stack&gt;
+
+      &lt;Divider /&gt;
+
+      &lt;Stack gap={12}&gt;
+        &lt;H2&gt;Delivery, observability, and scale&lt;/H2&gt;
+
+        &lt;CollapsibleSection title=&quot;Azure DevOps and CI/CD&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Azure DevOps combines Repos, Boards, Pipelines, Artifacts, and related
+              services; Azure DevOps itself is not automatically the hosting platform.
+              A frontend pipeline should install deterministic dependencies, lint,
+              type-check, test, build, scan dependencies, publish an artifact, deploy it,
+              and run a smoke test. Build once and promote the same immutable artifact
+              through environments.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              YAML pipelines use stages, jobs, and steps to show delivery flow and
+              dependencies. Keep environment configuration and secrets out of source
+              control, use protected variables or secret stores, and scope service
+              connections tightly. Pull-request validation and branch policies should
+              block merging when required checks or reviews fail.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              A senior answer includes release safety: feature flags, environment
+              approvals where risk warrants them, observability after deploy, and a
+              rollback plan. Do not say “CI/CD” as a synonym for deployment; it is a
+              repeatable quality and delivery system.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;Jenkins&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Jenkins defines delivery automation in a versioned{&quot; &quot;}
+              &lt;Text as=&quot;span&quot; weight=&quot;semibold&quot;&gt;Jenkinsfile&lt;/Text&gt;. A Declarative
+              Pipeline uses an &lt;Text as=&quot;span&quot; weight=&quot;semibold&quot;&gt;agent&lt;/Text&gt; to select
+              execution environment, &lt;Text as=&quot;span&quot; weight=&quot;semibold&quot;&gt;stages&lt;/Text&gt; to
+              group work such as build, test, and deploy, and{&quot; &quot;}
+              &lt;Text as=&quot;span&quot; weight=&quot;semibold&quot;&gt;steps&lt;/Text&gt; to execute commands.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Use &lt;Text as=&quot;span&quot; weight=&quot;semibold&quot;&gt;post&lt;/Text&gt; actions for outcomes such
+              as publishing test reports, cleanup, notifications, and failure handling.
+              Docker-based agents make build environments reproducible, which prevents
+              “works on this runner” failures. Jenkins is often more self-managed than
+              Azure Pipelines, so agent security, plugin lifecycle, and credentials need
+              attention.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              In an interview, explain transferable pipeline principles rather than
+              presenting Jenkins and Azure DevOps as identical products. The core concern
+              is deterministic, visible, secure delivery with fast feedback.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;Performance and Core Web Vitals&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Use lab tools such as Chrome DevTools and Lighthouse to reproduce and
+              diagnose problems, but use real-user monitoring to prove customer impact.
+              Core Web Vitals should be assessed at the 75th percentile of page loads:
+              LCP measures loading, INP measures responsiveness, and CLS measures visual
+              stability. Current “good” targets are LCP at or below 2.5 seconds, INP at
+              or below 200 milliseconds, and CLS at or below 0.1.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Segment telemetry by route, device, browser, geography, release version,
+              and network condition before changing code. Common fixes include reducing
+              render-blocking work, optimizing the LCP resource, splitting JavaScript,
+              virtualizing large lists, moving expensive work off the main thread, and
+              reserving image or ad dimensions. Measure again after release.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Do not start with &lt;Text as=&quot;span&quot; weight=&quot;semibold&quot;&gt;useMemo&lt;/Text&gt; when a
+              page is slow. The bottleneck may be network, bundle size, image loading,
+              layout, an API dependency, or a long JavaScript task rather than React
+              rerenders.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;Azure Monitor and Application Insights&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Azure Portal is the interface; Azure Monitor and Application Insights are
+              the observability services behind dashboards, logs, metrics, alerts, and
+              diagnostics. Application Insights can capture page views, requests,
+              dependencies, exceptions, traces, and custom events. Current Microsoft
+              guidance centers on OpenTelemetry for application telemetry.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              During an incident, start with user impact: availability, error rate,
+              latency, failed dependencies, and the affected release or region. Use
+              correlations across frontend errors, backend requests, and dependencies to
+              narrow the failure domain. Set alerts for actionable symptoms, not every
+              noisy metric.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Availability tests check whether a public endpoint responds from multiple
+              locations, but they do not replace real-user monitoring. A mature setup
+              combines synthetic checks, RUM, logs, traces, alert routing, dashboards, and
+              a runbook for escalation or rollback.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;Akamai and CDN configuration&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              A CDN serves cacheable content near users, lowering latency and protecting
+              the origin from traffic spikes. Key concepts are cache key, TTL,
+              &lt;Text as=&quot;span&quot; weight=&quot;semibold&quot;&gt; Cache-Control&lt;/Text&gt;, cache hit ratio,
+              origin offload, and purge or invalidation. A cache key must include every
+              input that changes the response.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Cache public static assets with hashed filenames and long immutable
+              lifetimes. Do not accidentally share personalized or authenticated content:
+              use private or no-store behavior, bypass cache, or vary safely by required
+              identity inputs. Ignoring a query parameter is safe only when it cannot
+              change returned content.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Use purge for fast freshness after a change, but do not use it as a
+              replacement for sensible TTL policy. In an event-driven platform, rehearse
+              invalidation, cache warming, rollback, and origin-protection behavior
+              before peak demand.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;High-traffic, event-driven platform design&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Start with traffic shape: expected concurrency, spike profile, live-update
+              frequency, cacheability, connection limits, and failure budget. Treat live
+              data as potentially late, duplicated, reordered, or unavailable. Design
+              clear freshness indicators and degraded behavior rather than hiding stale
+              or failed updates.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Protect the system in layers: CDN for cacheable content, load-tested APIs,
+              rate limits where appropriate, pagination or virtualization, backpressure,
+              and efficient reconnection logic. For WebSocket or SSE delivery, define
+              heartbeat, reconnect backoff, resync after reconnect, and subscription
+              cleanup. Do not rerender a whole dashboard for one incoming event.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Before a major event, set dashboards, alerts, ownership, incident
+              communication, launch criteria, and rollback procedures. During the event,
+              make changes conservatively and measure user outcomes before expanding a
+              rollout.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;Row gap={14} wrap&gt;
+          &lt;Link href=&quot;https://learn.microsoft.com/en-us/azure/devops/pipelines/process/create-multistage-pipeline&quot;&gt;
+            Azure Pipelines
+          &lt;/Link&gt;
+          &lt;Link href=&quot;https://www.jenkins.io/doc/book/pipeline/syntax/&quot;&gt;
+            Jenkins Pipeline syntax
+          &lt;/Link&gt;
+          &lt;Link href=&quot;https://web.dev/articles/vitals&quot;&gt;Core Web Vitals&lt;/Link&gt;
+          &lt;Link href=&quot;https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview&quot;&gt;
+            Application Insights
+          &lt;/Link&gt;
+          &lt;Link href=&quot;https://techdocs.akamai.com/property-mgr/docs/know-caching&quot;&gt;
+            Akamai caching
+          &lt;/Link&gt;
+        &lt;/Row&gt;
+      &lt;/Stack&gt;
+
+      &lt;Divider /&gt;
+
+      &lt;Stack gap={12}&gt;
+        &lt;H2&gt;Collaboration and technical leadership&lt;/H2&gt;
+
+        &lt;CollapsibleSection title=&quot;GitHub, Git, and Azure DevOps Services&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Use Git history and pull requests to make changes reviewable, traceable,
+              and reversible. Keep branches short-lived where practical, make PRs small
+              enough to understand, and use branch protection for required checks and
+              approvals. Resolve conflicts by understanding intent, not by mechanically
+              choosing one side.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              GitHub and Azure Repos support repository collaboration; Azure DevOps adds
+              Boards, Pipelines, Artifacts, and service integrations around that flow.
+              “Alignment PRs across branches” usually means controlled forward or back
+              merges, conflict resolution, regression testing, and clear release-branch
+              ownership. Avoid branching strategies that create permanent divergence.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              A senior engineer makes repository rules visible and automated: required
+              checks, ownership where useful, templates, conventional release practices,
+              and clear merge responsibility. Process should lower risk without making
+              routine delivery painfully slow.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;Jira, Confluence, and Agile execution&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Jira should make delivery state clear: problem, acceptance criteria,
+              dependencies, risks, scope, and owner. Split work vertically when possible
+              so a user-visible slice can be tested and delivered. Escalate ambiguity
+              early instead of treating missing requirements as an implementation detail.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Confluence is useful for durable decisions: architecture notes, RFCs,
+              runbooks, onboarding, and incident learnings. Write decisions with context,
+              alternatives considered, trade-offs, and owner; otherwise documentation
+              becomes stale prose. Link documents to work items and code when possible.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Agile is not a reason to avoid planning. It is a feedback loop: clarify
+              goal, deliver a small increment, observe result, and revise based on
+              evidence.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;Code reviews and mentoring&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Automated checks should enforce formatting and basic static rules. Human
+              review should focus on correctness, security, accessibility, performance,
+              tests, maintainability, and user impact. Explain the reason behind a
+              comment and distinguish blocking issues from optional suggestions.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Strong mentoring combines direct feedback, pairing on difficult work,
+              examples of good decisions, and gradual ownership transfer. The objective is
+              not to be the bottleneck or sole expert; it is to raise the team&#x27;s ability
+              to make sound decisions independently. Repeated review comments should
+              become a guideline, test, lint rule, or reusable component.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              In conflict, ask what outcome and evidence each person is optimizing for.
+              Prefer a small experiment, benchmark, prototype, or explicit decision
+              record over authority-based arguments. Keep feedback direct, kind, and
+              specific to behavior or code.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;Row gap={14} wrap&gt;
+          &lt;Link href=&quot;https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/code-reviewing-pull-requests/about-pull-request-reviews&quot;&gt;
+            GitHub PR reviews
+          &lt;/Link&gt;
+          &lt;Link href=&quot;https://learn.microsoft.com/en-us/azure/devops/repos/git/branch-policies&quot;&gt;
+            Azure branch policies
+          &lt;/Link&gt;
+        &lt;/Row&gt;
+      &lt;/Stack&gt;
+
+      &lt;Divider /&gt;
+
+      &lt;Stack gap={12}&gt;
+        &lt;H2&gt;Nice to have — know the shape, not every API&lt;/H2&gt;
+
+        &lt;CollapsibleSection title=&quot;C# and Razor&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              C# is the primary .NET language and Razor is server-side templating syntax
+              that combines C# with HTML. Razor pages or MVC views can render initial HTML
+              on the server, then hand off interactive behavior to JavaScript. Know the
+              distinction between server-rendered UI and a SPA, and how they can coexist.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Your C# background is useful for collaboration with backend engineers:
+              typed API contracts, authentication flows, deployment, logging, and
+              debugging across the boundary. Do not overstate recent Razor experience if
+              your work has focused on React or Angular.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              For this role, explain that full-stack familiarity helps you diagnose
+              end-to-end failures and make frontend decisions that fit backend
+              constraints.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;Stencil&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Stencil is a compiler for building standards-based Web Components. Its
+              output can be consumed across framework boundaries through custom elements,
+              which suits multi-framework design systems. It is most relevant when React,
+              Angular, or server-rendered applications must share a component library.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Compare it with a React-only component library: Web Components improve
+              interoperability, while React components can offer a more idiomatic React
+              developer experience. Discuss events, attributes versus properties,
+              accessibility, versioning, and framework wrappers as practical concerns.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              You do not need to claim production Stencil experience. Knowing why a team
+              might choose it is enough for a nice-to-have discussion.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;Tailwind CSS&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Tailwind is utility-first CSS: compositions of small classes create a
+              component&#x27;s visual result. The useful engineering question is not whether
+              utilities look verbose, but whether tokens, component conventions, and
+              responsive variants create consistent UI at scale. It works best with clear
+              design primitives and sensible component boundaries.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              It does not remove the need to understand CSS layout, specificity,
+              accessibility, dark mode, or responsive design. Use a design-token strategy
+              so colors, spacing, typography, and breakpoints are coherent rather than
+              hard-coded across templates.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Tailwind is a direct match for your CV. Prepare one concrete example of how
+              you used it to improve speed, consistency, or reusable UI.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;Vite and Rsbuild&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Vite and Rsbuild are modern frontend build tools focused on fast developer
+              feedback and production bundles. Vite uses native ES modules during
+              development and optimizes production builds; Rsbuild is built around the
+              Rspack ecosystem. Both handle dev server behavior, module transformation,
+              code splitting, assets, environment variables, and build output.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Choose based on ecosystem fit, existing tooling, plugin needs, build speed,
+              migration cost, and operational support—not benchmark numbers alone. The
+              frontend concerns remain the same: minimal initial JavaScript, predictable
+              output, source maps, cacheable assets, and repeatable builds.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              In an interview, connect bundler choice to developer experience and
+              production performance rather than treating it as a framework preference.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;Renovate and dependency automation&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Renovate automates dependency-update pull requests using repository
+              configuration. Good policies group compatible updates, schedule noise away
+              from critical windows, label changes, respect semantic version risk, and
+              require CI before merge. It reduces the backlog of insecure or obsolete
+              dependencies without granting blind auto-merge.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Dependency automation needs ownership: review major upgrades, track breaking
+              changes, maintain lockfiles, and know how to revert. The goal is a steady,
+              low-risk update stream rather than a quarterly crisis.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              Mention Renovate alongside automated testing, security scanning, and release
+              discipline. It is a delivery-quality tool, not an isolated bot.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;CollapsibleSection title=&quot;Analytics and A/B testing&quot; defaultOpen&gt;
+          &lt;Stack gap={8}&gt;
+            &lt;Text&gt;
+              Data-driven development starts with a decision, a hypothesis, and a
+              measurable outcome. Define a primary metric, guardrail metrics such as
+              performance or errors, audience eligibility, and a decision rule before
+              running an experiment. Do not start from a dashboard and search for a
+              flattering number after the fact.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              A/B tests require reliable randomization, stable instrumentation, enough
+              exposure, and protection against misleading early conclusions. Feature flags
+              let teams release safely, target cohorts, and roll back, but a flag alone is
+              not an experiment. Track both product behavior and technical health.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              For frontend work, useful metrics can include task completion, conversion,
+              interaction latency, error rate, Core Web Vitals, and accessibility defects.
+              Discuss privacy, consent, and data minimization when collecting user events.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CollapsibleSection&gt;
+
+        &lt;Row gap={14} wrap&gt;
+          &lt;Link href=&quot;https://learn.microsoft.com/en-us/aspnet/core/mvc/views/razor&quot;&gt;
+            Razor docs
+          &lt;/Link&gt;
+          &lt;Link href=&quot;https://stenciljs.com/docs/introduction&quot;&gt;Stencil docs&lt;/Link&gt;
+          &lt;Link href=&quot;https://tailwindcss.com/docs&quot;&gt;Tailwind docs&lt;/Link&gt;
+          &lt;Link href=&quot;https://vite.dev/guide/&quot;&gt;Vite docs&lt;/Link&gt;
+          &lt;Link href=&quot;https://rsbuild.rs/guide/start/quick-start&quot;&gt;Rsbuild docs&lt;/Link&gt;
+          &lt;Link href=&quot;https://docs.renovatebot.com/&quot;&gt;Renovate docs&lt;/Link&gt;
+        &lt;/Row&gt;
+      &lt;/Stack&gt;
+
+      &lt;Divider /&gt;
+
+      &lt;Stack gap={6}&gt;
+        &lt;H3&gt;Research basis&lt;/H3&gt;
+        &lt;Text tone=&quot;secondary&quot; size=&quot;small&quot;&gt;
+          Sources reviewed August 4, 2026: React documentation, TypeScript Handbook,
+          Microsoft Learn, Jenkins documentation, web.dev, Akamai TechDocs, and official
+          tool documentation linked above.
+        &lt;/Text&gt;
+      &lt;/Stack&gt;
+    &lt;/Stack&gt;
+  );
+}
+</pre>
+      </details>
+    </section>
+  </div>
+</body>
+</html>

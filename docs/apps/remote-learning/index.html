@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>remote-learning · apps hub</title>
+  <style>
+    :root {
+      --bg: #0d1117; --surface: #161b22; --border: #30363d;
+      --text: #e6edf3; --muted: #848d97; --accent: #58a6ff;
+      --green: #3fb950; --amber: #d29922; --purple: #a371f7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif;
+      line-height: 1.5; padding: 2.5rem 1.25rem; max-width: 960px; margin: 0 auto;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    h1 { font-size: 1.5rem; font-weight: 600; }
+    .sub { color: var(--muted); margin: .5rem 0 1.75rem; font-size: .95rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.25rem; display: flex; flex-direction: column; gap: .6rem;
+      transition: border-color .15s;
+    }
+    .card:hover { border-color: var(--accent); }
+    .card h2 { font-size: 1.05rem; }
+    .tag {
+      align-self: flex-start; font-size: .7rem; font-family: ui-monospace, Menlo, monospace;
+      padding: .15rem .45rem; border-radius: 999px; border: 1px solid var(--border);
+    }
+    .tag.live { color: var(--green); }
+    .tag.standin { color: var(--amber); }
+    .desc { color: var(--muted); font-size: .875rem; flex: 1; }
+    .go { font-size: .875rem; font-weight: 600; margin-top: .25rem; }
+    nav { margin-bottom: 1.25rem; font-size: .875rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <nav><a href="/archives/">← vault index</a></nav>
+  <h1>Senior frontend interview workbook</h1>
+  <p class="sub">Live in-browser apps from <code style="color:var(--accent)">courses/remote-learning</code> · hosted under <code style="color:var(--accent)">/archives/apps/remote-learning/</code></p>
+  <div class="grid">
+    <a class="card" href="angular/">
+      <span class="tag live">live build</span>
+      <h2>Angular</h2>
+      <p class="desc">@remote-learning/angular — static production build with domain package.</p>
+      <span class="go">Open app →</span>
+    </a>
+    <a class="card" href="react-next/">
+      <span class="tag live">live build</span>
+      <h2>react-next</h2>
+      <p class="desc">Next.js static export — drills / Quote UI.</p>
+      <span class="go">Open app →</span>
+    </a>
+    <a class="card" href="react-vite/">
+      <span class="tag live">live build</span>
+      <h2>react-vite</h2>
+      <p class="desc">TanStack Router Vite SPA — static client build (no Start SSR).</p>
+      <span class="go">Open app →</span>
+    </a>
+  </div>
+</body>
+</html>

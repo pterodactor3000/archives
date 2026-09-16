@@ -1,14 +1,13 @@
 ---
 layout: page
-title: "React Next Interview Guide"
+title: "React & Next.js — senior interview guide"
 ---
+
+**Live stand-in:** [apps/canvases/react-next-interview-guide.html](../../apps/canvases/react-next-interview-guide.html)
 
 **Canvas** · `notes/empty-window-canvases/react-next-interview-guide.canvas.tsx`
 
-`.canvas.tsx` is Cursor canvas source — open it in Cursor to view/edit.
-This page is a stub for remote browsing of the vault catalog.
-Source files live outside `/docs`, so GitHub Pages does not publish them;
-use the blob links below.
+Static HTML stand-in for Pages (not the Cursor canvas runtime).
 
 - Source: [`notes/empty-window-canvases/react-next-interview-guide.canvas.tsx`](https://github.com/pterodactor3000/archives/blob/main/notes/empty-window-canvases/react-next-interview-guide.canvas.tsx)
 - Data: [`notes/empty-window-canvases/react-next-interview-guide.canvas.data.json`](https://github.com/pterodactor3000/archives/blob/main/notes/empty-window-canvases/react-next-interview-guide.canvas.data.json)

@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React &amp; Next.js — senior interview guide · canvas</title>
+  <style>
+    :root {
+      --bg: #0b0f14; --surface: #12181f; --border: #243041;
+      --text: #d7e0ea; --muted: #8b9aab; --accent: #5cdb95;
+      --code-bg: #0a0e13; --pink: #ff7b72;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif;
+      line-height: 1.55; padding: 1.5rem 1rem 3rem;
+    }
+    .wrap { max-width: 920px; margin: 0 auto; }
+    nav { font-size: .875rem; margin-bottom: 1.25rem; color: var(--muted); }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    header.card, section.outline, section.source {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem 1.35rem; margin-bottom: 1rem;
+    }
+    h1.page { font-size: 1.45rem; font-weight: 650; letter-spacing: -.02em; }
+    .path { margin-top: .4rem; font-size: .8rem; color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .badge {
+      display: inline-block; margin-top: .75rem; font-size: .7rem;
+      font-family: ui-monospace, Menlo, monospace; color: var(--accent);
+      border: 1px solid var(--border); border-radius: 999px; padding: .15rem .5rem;
+    }
+    .muted { color: var(--muted); font-size: .9rem; }
+    h2 { font-size: 1rem; margin-bottom: .75rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .04em; }
+    h1.extracted { font-size: 1.25rem; margin: .4rem 0 .6rem; }
+    h2.extracted { font-size: 1.05rem; margin: 1rem 0 .4rem; color: var(--text);
+      text-transform: none; letter-spacing: 0; }
+    h3.extracted { font-size: .95rem; margin: .75rem 0 .3rem; color: #c9d4e0; }
+    p.extracted { color: var(--muted); font-size: .9rem; margin: .35rem 0; }
+    pre {
+      background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 1rem; overflow: auto; max-height: 70vh; font-size: .78rem;
+      line-height: 1.45; color: #c9d1d9;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    details summary {
+      cursor: pointer; color: var(--accent); font-size: .9rem; margin-bottom: .75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a href="/archives/">← vault index</a>
+      · <a href="https://github.com/pterodactor3000/archives/blob/main/notes/empty-window-canvases/react-next-interview-guide.canvas.tsx">GitHub source</a>
+    </nav>
+    <header class="card">
+      <h1 class="page">React &amp; Next.js — senior interview guide</h1>
+      <p class="path">notes/empty-window-canvases/react-next-interview-guide.canvas.tsx</p>
+      <span class="badge">canvas stand-in · not Cursor runtime</span>
+      <p class="muted" style="margin-top:.85rem">
+        Static HTML stand-in for browsing on GitHub Pages. Open the
+        <code style="color:var(--pink)">.canvas.tsx</code> in Cursor for the full canvas runtime.
+      </p>
+    </header>
+    <section class="outline"><h2>Extracted structure</h2><h1 class='extracted'>React &amp; Next.js — senior interview guide</h1><h2 class='extracted'>Frameworks — rendering &amp; tradeoffs</h2><h2 class='extracted'>State management — pick with reasoning</h2><h2 class='extracted'>HTML &amp; SEO proficiency</h2><h2 class='extracted'>Infrastructure</h2><h2 class='extracted'>JavaScript (engine, perf, structures, types, auth)</h2><h2 class='extracted'>Testing process literacy</h2><h3 class='extracted'>Monorepos</h3><h3 class='extracted'>Release, env, distribution</h3><h3 class='extracted'>Web performance infrastructure</h3><h3 class='extracted'>JS engine &amp; concurrency</h3><h3 class='extracted'>Performance tooling</h3><h3 class='extracted'>Advanced structures</h3><h3 class='extracted'>Special types</h3><h3 class='extracted'>Auth layers with known providers</h3><p class='extracted'>React / Next.js</p><p class='extracted'>Tradeoffs / when to use</p><p class='extracted'>Senior interviews probe whether you can pick SSR, SSG, ISR, or CSR per route — and explain hydration, caching, and SEO consequences.</p><p class='extracted'>Source: Next.js App Router docs (ISR, fetch cache, caching guides) via Context7 · /vercel/next.js</p><p class='extracted'>Split server state (async remote data) from client state (UI, ephemeral form drafts, session-scoped flags). Wrong tool for the wrong kind of state is a common senior fail.</p><p class='extracted'>Sources: Context7 — Zustand /pmndrs/zustand, TanStack Query /tanstack/query, React /reactjs/react.dev, Next.js /vercel/next.js</p><p class='extracted'>1. Is the source of truth remote? Prefer RSC fetch or TanStack Query — not Redux/Zustand as the cache.</p><p class='extracted'>2. Is it UI-only and local? useState / useReducer first.</p><p class='extracted'>3. Shared across distant clients with frequent updates? Zustand (or RTK if org standard).</p><p class='extracted'>4. Stable app-wide config? Context.</p><p class='extracted'>5. Need offline, normalized graph, complex middleware? RTK (+ Query or RTK Query).</p><p class='extracted'>Grounded in Next.js Metadata, sitemap.ts, and robots.ts conventions (Context7 · /vercel/next.js).</p></section>
+    <section class="source">
+      <details open>
+        <summary>Source (.canvas.tsx)</summary>
+        <pre>import {
+  Button,
+  Callout,
+  Card,
+  CardBody,
+  CardHeader,
+  CollapsibleSection,
+  Divider,
+  Grid,
+  H1,
+  H2,
+  H3,
+  Pill,
+  Row,
+  Spacer,
+  Stack,
+  Table,
+  Text,
+  useCanvasState,
+  useHostTheme,
+} from &quot;cursor/canvas&quot;;
+
+type SectionId =
+  | &quot;frameworks&quot;
+  | &quot;state&quot;
+  | &quot;html&quot;
+  | &quot;infra&quot;
+  | &quot;javascript&quot;
+  | &quot;testing&quot;;
+
+function Topic({
+  title,
+  definition,
+  explanation,
+  relevance,
+  tradeoffs,
+  defaultOpen,
+}: {
+  title: string;
+  definition: string;
+  explanation: string;
+  relevance?: string;
+  tradeoffs: string;
+  defaultOpen?: boolean;
+}) {
+  const theme = useHostTheme();
+  return (
+    &lt;CollapsibleSection title={title} defaultOpen={defaultOpen}&gt;
+      &lt;Stack gap={10} style={{ paddingBottom: 8 }}&gt;
+        &lt;Stack gap={4}&gt;
+          &lt;Text size=&quot;small&quot; weight=&quot;semibold&quot; tone=&quot;secondary&quot;&gt;
+            Definition
+          &lt;/Text&gt;
+          &lt;Text&gt;{definition}&lt;/Text&gt;
+        &lt;/Stack&gt;
+        &lt;Stack gap={4}&gt;
+          &lt;Text size=&quot;small&quot; weight=&quot;semibold&quot; tone=&quot;secondary&quot;&gt;
+            Explanation
+          &lt;/Text&gt;
+          &lt;Text&gt;{explanation}&lt;/Text&gt;
+        &lt;/Stack&gt;
+        {relevance ? (
+          &lt;Stack gap={4}&gt;
+            &lt;Text size=&quot;small&quot; weight=&quot;semibold&quot; tone=&quot;secondary&quot;&gt;
+              React / Next.js
+            &lt;/Text&gt;
+            &lt;Text
+              style={{
+                padding: 10,
+                background: theme.fill.tertiary,
+                borderRadius: 6,
+              }}
+            &gt;
+              {relevance}
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        ) : null}
+        &lt;Stack gap={4}&gt;
+          &lt;Text size=&quot;small&quot; weight=&quot;semibold&quot; tone=&quot;secondary&quot;&gt;
+            Tradeoffs / when to use
+          &lt;/Text&gt;
+          &lt;Text tone=&quot;secondary&quot;&gt;{tradeoffs}&lt;/Text&gt;
+        &lt;/Stack&gt;
+      &lt;/Stack&gt;
+    &lt;/CollapsibleSection&gt;
+  );
+}
+
+function FrameworksSection() {
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;Stack gap={6}&gt;
+        &lt;H2&gt;Frameworks — rendering &amp; tradeoffs&lt;/H2&gt;
+        &lt;Text tone=&quot;secondary&quot;&gt;
+          Senior interviews probe whether you can pick SSR, SSG, ISR, or CSR per
+          route — and explain hydration, caching, and SEO consequences.
+        &lt;/Text&gt;
+      &lt;/Stack&gt;
+
+      &lt;Callout tone=&quot;info&quot; title=&quot;App Router mental model (official)&quot;&gt;
+        Routes are Server Components by default. Static shell can include cached
+        data; request-time dynamic parts stream via Suspense. Fetch caching maps
+        roughly to classic getStaticProps / getServerSideProps / ISR.
+      &lt;/Callout&gt;
+
+      &lt;Table
+        headers={[&quot;Mode&quot;, &quot;When HTML is built&quot;, &quot;Data freshness&quot;, &quot;SEO&quot;]}
+        columnAlign={[&quot;left&quot;, &quot;left&quot;, &quot;left&quot;, &quot;left&quot;]}
+        rows={[
+          [
+            &quot;SSG / static&quot;,
+            &quot;Build time (or on-demand ISR)&quot;,
+            &quot;Cached until revalidate&quot;,
+            &quot;Excellent — full HTML for crawlers&quot;,
+          ],
+          [
+            &quot;SSR / dynamic&quot;,
+            &quot;Every request&quot;,
+            &quot;Always fresh&quot;,
+            &quot;Excellent — personalized HTML possible&quot;,
+          ],
+          [
+            &quot;CSR / SPA&quot;,
+            &quot;Minimal shell; JS fills UI&quot;,
+            &quot;Client fetch after load&quot;,
+            &quot;Weak without prerender / SSR&quot;,
+          ],
+          [
+            &quot;Streaming RSC&quot;,
+            &quot;Shell first, then chunks&quot;,
+            &quot;Mix of static + dynamic&quot;,
+            &quot;Strong — HTML arrives early&quot;,
+          ],
+        ]}
+        striped
+      /&gt;
+      &lt;Text size=&quot;small&quot; tone=&quot;tertiary&quot;&gt;
+        Source: Next.js App Router docs (ISR, fetch cache, caching guides) via
+        Context7 · /vercel/next.js
+      &lt;/Text&gt;
+
+      &lt;Topic
+        title=&quot;SSR — Server-Side Rendering&quot;
+        defaultOpen
+        definition=&quot;HTML is generated on the server for each request, then sent to the browser where React hydrates interactive islands.&quot;
+        explanation=&quot;Use when content depends on request context (cookies, auth, geo, A/B) or must be fresh on every hit. Cost: TTFB grows with server work; cache carefully or you pay per request.&quot;
+        relevance=&quot;In App Router: fetch with cache: &#x27;no-store&#x27;, reading cookies()/headers(), or other dynamic APIs opts the route into dynamic rendering. Pair with Suspense so the static shell can stream while dynamic parts resolve.&quot;
+        tradeoffs=&quot;Best for personalized dashboards, checkout, and SEO pages that change per user. Avoid for marketing pages that could be static — you burn compute and lose CDN edge benefits.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;SSG — Static Site Generation&quot;
+        definition=&quot;Pages (and often data) are prerendered at build time into HTML/JSON that a CDN can serve without hitting an origin Node process.&quot;
+        explanation=&quot;generateStaticParams tells Next which dynamic segments to prerender. Unlisted paths can still be generated on first request depending on dynamicParams. Ideal for content that is shared across users.&quot;
+        relevance=&quot;export async function generateStaticParams() { ... } plus default static behavior. Combine with export const revalidate = N or fetch next: { revalidate: N } for ISR (stale-while-revalidate style page updates).&quot;
+        tradeoffs=&quot;Use for blogs, docs, product catalogs, landing pages. Poor fit when every visitor needs unique HTML or data changes every second without an ISR strategy.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;SPA / CSR — Client-Side Rendering&quot;
+        definition=&quot;The browser downloads a JS bundle, mounts React, then fetches data. Initial HTML is often a thin shell.&quot;
+        explanation=&quot;Great DX for highly interactive apps behind login. Crawlers that do not execute JS see little content; social previews fail without server metadata; first contentful paint waits on JS.&quot;
+        relevance=&quot;Mark Client Components with &#x27;use client&#x27;. Prefer Server Components for data fetching when possible; use CSR for interactive widgets, forms with rich client state, and browser-only APIs.&quot;
+        tradeoffs=&quot;Choose when SEO is irrelevant (admin tools) or you already SSR a shell. Do not ship a pure SPA marketing site if organic search and OG previews matter.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;Hydration &amp; hydration issues&quot;
+        definition=&quot;Hydration attaches React&#x27;s event system and fiber tree to server-rendered HTML. The first client render must match the server HTML.&quot;
+        explanation=&quot;Mismatches come from Date.now(), Math.random(), locale formatting, typeof window checks in render, or browser-only APIs during the initial pass. React may recover but handlers can attach wrong; treat mismatches as bugs.&quot;
+        relevance=&quot;Docs patterns: useEffect + didMount for client-only UI; useSyncExternalStore(..., getServerSnapshot) for external stores; suppressHydrationWarning only for known-safe text like timestamps. In Next, keep Server Components pure and push browser APIs into Client Components.&quot;
+        tradeoffs=&quot;Fix root causes before suppressing warnings. Client-only branches after mount avoid mismatches but delay interactive content — acceptable for theme from localStorage, not for primary SEO body text.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;SPA SEO vs SSR/SSG SEO&quot;
+        definition=&quot;SEO depends on crawlers receiving meaningful HTML (and metadata) without relying solely on client JS execution.&quot;
+        explanation=&quot;SSR/SSG emit real titles, body text, and Open Graph tags in the first response. Pure SPAs often need prerender services or migrate to SSR. Indexing + social cards are separate concerns from &#x27;Google can run JS sometimes&#x27;.&quot;
+        relevance=&quot;Next Metadata API / generateMetadata run on the server. Static and dynamic HTML both work; CSR-only pages struggle with OG scrapers that do not run your bundle.&quot;
+        tradeoffs=&quot;Public content: prefer SSG/ISR or SSR. Authenticated app screens: SEO usually irrelevant — CSR or dynamic RSC is fine.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;SSG data fetching &amp; ISR&quot;
+        definition=&quot;At build (or revalidation) time, Next fetches data, embeds it in static HTML, and can refresh on a timer or on-demand without a full redeploy.&quot;
+        explanation=&quot;ISR serves the cached page immediately, then regenerates in the background after revalidate — classic stale-while-revalidate at the page layer. On-demand revalidateTag / revalidatePath invalidates when CMS webhooks fire.&quot;
+        relevance=&quot;fetch(&#x27;...&#x27;, { cache: &#x27;force-cache&#x27; }) ≈ static; { next: { revalidate: 10 } } ≈ ISR; { cache: &#x27;no-store&#x27; } ≈ SSR. Newer &#x27;use cache&#x27; + cacheLife/cacheTag refine the same idea.&quot;
+        tradeoffs=&quot;ISR wins for semi-static catalogs. Pure SSG wins when content changes only on deploy. Avoid ISR intervals that are so short they behave like uncached SSR with extra complexity.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;Advanced composition: static + stream + dynamic&quot;
+        definition=&quot;One route can mix a prerendered shell, cached shared data, and request-time personalized UI.&quot;
+        explanation=&quot;Official caching guide pattern: static header/nav, cached blog list with cacheLife, and Suspense-wrapped user preferences that read cookies. Users see fast HTML; personalization streams in.&quot;
+        relevance=&quot;This is the senior App Router answer: do not pick one mode for the whole app — pick per component boundary.&quot;
+        tradeoffs=&quot;More mental overhead than classic pages/ getServerSideProps. Worth it when TTFB and personalization both matter.&quot;
+      /&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function StateSection() {
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;Stack gap={6}&gt;
+        &lt;H2&gt;State management — pick with reasoning&lt;/H2&gt;
+        &lt;Text tone=&quot;secondary&quot;&gt;
+          Split server state (async remote data) from client state (UI, ephemeral
+          form drafts, session-scoped flags). Wrong tool for the wrong kind of
+          state is a common senior fail.
+        &lt;/Text&gt;
+      &lt;/Stack&gt;
+
+      &lt;Table
+        headers={[&quot;Approach&quot;, &quot;Owns&quot;, &quot;Strength&quot;, &quot;Cost&quot;]}
+        rows={[
+          [
+            &quot;Server Components + fetch&quot;,
+            &quot;Server/remote data&quot;,
+            &quot;No client waterfalls; secrets stay server-side&quot;,
+            &quot;No client cache/refetch UX unless you add more&quot;,
+          ],
+          [
+            &quot;TanStack Query&quot;,
+            &quot;Server state on client&quot;,
+            &quot;Cache, staleTime, retries, SSR hydrate&quot;,
+            &quot;Another layer; overkill if RSC fetch is enough&quot;,
+          ],
+          [
+            &quot;React Context&quot;,
+            &quot;Low-churn shared UI values&quot;,
+            &quot;Built-in; good for theme/locale/DI&quot;,
+            &quot;Broad value changes re-render consumers&quot;,
+          ],
+          [
+            &quot;Zustand&quot;,
+            &quot;Client UI / domain state&quot;,
+            &quot;No provider tax; selectors; tiny API&quot;,
+            &quot;You invent structure; easy to overgrow&quot;,
+          ],
+          [
+            &quot;Redux Toolkit&quot;,
+            &quot;Complex client domain&quot;,
+            &quot;DevTools, patterns, middleware, RTK Query&quot;,
+            &quot;Boilerplate + ceremony for small apps&quot;,
+          ],
+        ]}
+        striped
+      /&gt;
+      &lt;Text size=&quot;small&quot; tone=&quot;tertiary&quot;&gt;
+        Sources: Context7 — Zustand /pmndrs/zustand, TanStack Query
+        /tanstack/query, React /reactjs/react.dev, Next.js /vercel/next.js
+      &lt;/Text&gt;
+
+      &lt;Topic
+        title=&quot;Server state vs client state (App Router)&quot;
+        defaultOpen
+        definition=&quot;Server state is data whose source of truth is the backend (or cache). Client state is data whose source of truth is the browser UI session.&quot;
+        explanation=&quot;Lists from an API, user profile, cart on the server = server state. Modal open, selected tab, unsaved draft text, optimistic UI flags = client state. Mixing them in one Redux store recreates a second backend.&quot;
+        relevance=&quot;Default: fetch in Server Components. Add TanStack Query when you need client refetch, infinite scroll, shared cache across client trees, or migrating an existing SPA. TanStack docs: treat Server Components as a prefetch layer; avoid rendering query results in RSC if the client will revalidate — they can drift.&quot;
+        tradeoffs=&quot;New RSC app: start with framework fetch. Bring Query when you feel the pain. Never put server lists only in Context.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;React Context&quot;
+        definition=&quot;A built-in way to pass a value through the tree without prop drilling; consumers re-render when the provided value identity changes.&quot;
+        explanation=&quot;Ideal for dependency injection (theme, i18n, auth session object that rarely changes). Bad as a high-frequency store unless you split contexts and memoize carefully.&quot;
+        relevance=&quot;Works in Client Components. Server Components can pass props into a client Provider. Do not wrap the entire app in a giant mutable Context for every entity.&quot;
+        tradeoffs=&quot;Use for stable, tree-wide config. Prefer Zustand/Redux when many unrelated fields update independently.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;Zustand&quot;
+        definition=&quot;A minimal external store with a hook API and selectors; no required Provider for the simple create() pattern.&quot;
+        explanation=&quot;create() returns a hook; select slices to limit re-renders; useShallow for object picks. For Next App Router, official guidance often wraps a per-request store factory in Context so SSR does not share mutable singleton state across users.&quot;
+        relevance=&quot;Excellent for UI chrome, wizards, and client-only domain logic beside RSC data. Pair with Server Actions / router refresh for mutations that must hit the server.&quot;
+        tradeoffs=&quot;Default choice for medium client state without Redux ceremony. Reach for RTK when many teams need strict conventions, time-travel, or RTK Query as the data layer.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;Redux Toolkit (RTK)&quot;
+        definition=&quot;Opinionated Redux with createSlice, Immer drafts, configureStore, and optional RTK Query for server cache.&quot;
+        explanation=&quot;Scales when multiple features share complex transitions, middleware, and auditability. Selectors and normalized entities are first-class. Heavier than Zustand for a settings drawer.&quot;
+        relevance=&quot;Use in large client-heavy Next apps or when the team already standardizes on Redux. Keep server-fetched page data in RSC or RTK Query — not duplicated ad hoc thunks without a cache policy.&quot;
+        tradeoffs=&quot;Choose for large multi-team client domains. Skip for small apps — Zustand or Context will ship faster.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;TanStack Query (React Query)&quot;
+        definition=&quot;A server-state library: keyed cache, stale/fresh semantics, background refetch, retries, and SSR dehydration/hydration.&quot;
+        explanation=&quot;staleTime controls when data is considered fresh (Next SSR examples often use 60s to avoid immediate client refetch). Server: new QueryClient per request. Browser: singleton. HydrationBoundary passes dehydrated cache into client components.&quot;
+        relevance=&quot;Fits App Router when Client Components own interactive lists that refetch. Prefetch in a Server Component, dehydrate, hydrate on the client. If framework fetch + revalidate covers the case, skip Query.&quot;
+        tradeoffs=&quot;Use for client-driven async UX. Do not fight RSC by reimplementing the entire data layer in Query &#x27;just because&#x27;.&quot;
+      /&gt;
+
+      &lt;Card&gt;
+        &lt;CardHeader&gt;Interview decision tree&lt;/CardHeader&gt;
+        &lt;CardBody&gt;
+          &lt;Stack gap={6}&gt;
+            &lt;Text&gt;
+              1. Is the source of truth remote? Prefer RSC fetch or TanStack Query
+              — not Redux/Zustand as the cache.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              2. Is it UI-only and local? useState / useReducer first.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              3. Shared across distant clients with frequent updates? Zustand
+              (or RTK if org standard).
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              4. Stable app-wide config? Context.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              5. Need offline, normalized graph, complex middleware? RTK (+ Query
+              or RTK Query).
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CardBody&gt;
+      &lt;/Card&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function HtmlSeoSection() {
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;Stack gap={6}&gt;
+        &lt;H2&gt;HTML &amp; SEO proficiency&lt;/H2&gt;
+        &lt;Text tone=&quot;secondary&quot;&gt;
+          Grounded in Next.js Metadata, sitemap.ts, and robots.ts conventions
+          (Context7 · /vercel/next.js).
+        &lt;/Text&gt;
+      &lt;/Stack&gt;
+
+      &lt;Topic
+        title=&quot;Open Graph (and social metadata)&quot;
+        defaultOpen
+        definition=&quot;Open Graph is a set of meta tags (og:title, og:description, og:image, og:url, …) that scrapers use for link previews on social platforms.&quot;
+        explanation=&quot;Without OG tags, shares show generic titles or empty cards. Images should be absolute URLs, adequate size, and stable. Twitter/X has parallel twitter: cards; many sites set both.&quot;
+        relevance=&quot;export const metadata: Metadata = { openGraph: { ... } } or async generateMetadata() that fetches per-entity data and can extend parent openGraph.images. Runs on the server — scrapers see tags in HTML.&quot;
+        tradeoffs=&quot;Static metadata for sitewide defaults; generateMetadata for product/blog pages. Always provide a default og:image. Dynamic OG image routes are powerful but add caching complexity.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;Sitemaps (including dynamic)&quot;
+        definition=&quot;A sitemap.xml lists canonical URLs (and optional lastmod, changefreq, priority) so crawlers discover pages efficiently.&quot;
+        explanation=&quot;Static sitemaps suit small sites. Dynamic sitemaps query CMS/DB at request or build time and return URL arrays. Large sites split into sitemap indexes.&quot;
+        relevance=&quot;app/sitemap.ts exports default function sitemap(): MetadataRoute.Sitemap { return [...] }. Cached by default. Pull slugs from your CMS the same way generateStaticParams does.&quot;
+        tradeoffs=&quot;Always keep sitemap URLs in sync with indexable routes. Exclude noindex, auth-only, and duplicate faceted URLs. Link the sitemap from robots.txt.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;robots.txt&quot;
+        definition=&quot;A robots.txt file tells well-behaved crawlers which paths they may fetch and where the sitemap lives. It is not an access-control mechanism.&quot;
+        explanation=&quot;Disallow private or infinite URL spaces (filters, preview tokens). Allow public content. Malicious bots ignore robots.txt — protect secrets with auth, not Disallow.&quot;
+        relevance=&quot;app/robots.ts returns MetadataRoute.Robots with rules.userAgent, allow, disallow, and sitemap URL. Environment-specific rules (block staging) are a common pattern.&quot;
+        tradeoffs=&quot;Use robots for crawl budget and polite exclusions. Use authentication + headers for real secrecy. Pair with noindex metadata when a page should exist but not rank.&quot;
+      /&gt;
+
+      &lt;Callout tone=&quot;neutral&quot; title=&quot;Senior SEO checklist for Next&quot;&gt;
+        Unique title/description per indexable route · Absolute canonical · OG
+        image · sitemap coverage · robots alignment · meaningful HTML from
+        SSR/SSG (not empty CSR shell) · Core Web Vitals as ranking-adjacent UX.
+      &lt;/Callout&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function InfraSection() {
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;Stack gap={6}&gt;
+        &lt;H2&gt;Infrastructure&lt;/H2&gt;
+        &lt;Text tone=&quot;secondary&quot;&gt;
+          Monorepos and delivery are platform knowledge; Next-specific pieces
+          (NEXT_PUBLIC_, build outputs) call out where relevant. Turborepo notes
+          from Context7 · /vercel/turborepo.
+        &lt;/Text&gt;
+      &lt;/Stack&gt;
+
+      &lt;H3&gt;Monorepos&lt;/H3&gt;
+
+      &lt;Topic
+        title=&quot;Workspaces (npm / pnpm / yarn)&quot;
+        defaultOpen
+        definition=&quot;Package-manager workspaces link multiple packages in one repo so local packages resolve like published dependencies.&quot;
+        explanation=&quot;Root package.json lists workspaces: [&#x27;apps/*&#x27;, &#x27;packages/*&#x27;]. Shared UI, eslint-config, and tsconfig live in packages/; apps consume them. pnpm is popular for strict node_modules and speed.&quot;
+        relevance=&quot;Next apps sit in apps/web; import from @acme/ui. Keep Next config and env per app. Avoid circular workspace deps.&quot;
+        tradeoffs=&quot;Use when multiple apps share code. Skip for a single app — extra structure without payoff.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;Turborepo&quot;
+        definition=&quot;A task runner/build system for JS/TS monorepos: schedules package.json scripts, caches outputs locally/remotely, parallelizes across cores.&quot;
+        explanation=&quot;turbo.json (or package pipeline) declares task dependsOn (e.g. ^build), outputs (.next/**), and cache: false for dev. Remote cache (TURBO_TOKEN, TURBO_TEAM) makes CI reuse artifacts.&quot;
+        relevance=&quot;turbo run build test lint over a Next monorepo. Cache .next/** but exclude .next/cache/** per docs. Incremental adoption — add turbo without rewriting packages.&quot;
+        tradeoffs=&quot;Best when builds/tests dominate CI time. Less opinionated than Nx on generators/project graph — pair with workspaces.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;Nx&quot;
+        definition=&quot;An extensible monorepo toolkit with project graph, generators, affected commands, optional computation caching, and plugins (including Next).&quot;
+        explanation=&quot;Stronger opinions and tooling than Turborepo alone: code generation, module boundaries, release helpers. Higher learning curve.&quot;
+        relevance=&quot;Nx Next plugins scaffold apps/libs. Use affected:build so only changed projects rebuild in CI.&quot;
+        tradeoffs=&quot;Choose Nx for large orgs needing generators and enforced boundaries. Choose Turborepo for lightweight caching on existing workspaces. They can coexist in some setups but pick one primary orchestrator.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;Lerna&quot;
+        definition=&quot;Historically a multi-package publishing tool; modern Lerna often pairs with Nx for versioning/publishing workflows.&quot;
+        explanation=&quot;Classic Lerna bootstrap/publish is largely superseded by workspaces + Changesets/Nx release. Still appears in legacy repos.&quot;
+        relevance=&quot;Rare as greenfield Next choice today. Migrate mental model to workspaces + Turborepo/Nx + Changesets.&quot;
+        tradeoffs=&quot;Maintain if inherited; do not start new React monorepos on classic Lerna alone.&quot;
+      /&gt;
+
+      &lt;Divider /&gt;
+      &lt;H3&gt;Release, env, distribution&lt;/H3&gt;
+
+      &lt;Topic
+        title=&quot;Release strategies&quot;
+        definition=&quot;How versions move from main to production: continuous deploy, staged rollouts, canaries, feature flags, and versioned packages.&quot;
+        explanation=&quot;App repos often CD every main merge to preview + prod with flags. Library monorepos use semver + Changesets. Canary releases validate before promoting. Rollback = previous immutable deployment.&quot;
+        relevance=&quot;Vercel/Netlify preview deployments per PR. Feature flags beat long-lived release branches for UI. Keep migrations backward-compatible for expand/contract deploys.&quot;
+        tradeoffs=&quot;Trunk-based + flags for product apps. Strict semver for published packages. Avoid environment drift between staging and prod.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;Environment variables&quot;
+        definition=&quot;Config injected per environment. Secrets must never ship to the browser bundle.&quot;
+        explanation=&quot;Server-only secrets: DATABASE_URL, AUTH_SECRET. Client-visible: only non-secrets.&quot;
+        relevance=&quot;Next: only NEXT_PUBLIC_* is inlined into Client Components. Server Components and Route Handlers can read unprefixed env. Never put API private keys in NEXT_PUBLIC_. Document required vars; fail fast at boot.&quot;
+        tradeoffs=&quot;Prefer runtime server env for secrets (flexible). Build-time NEXT_PUBLIC_ needs rebuild to change — fine for public CDN URLs, bad for secrets.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;Distribution flow&quot;
+        definition=&quot;The path from commit to users: CI build → artifact → edge/CDN → browsers, plus package publish for libraries.&quot;
+        explanation=&quot;Typical Next SaaS: PR checks → merge → build → deploy immutable URL → CDN cache → optional gradual traffic shift. Monorepo libraries: version bump → npm publish → apps bump dependency.&quot;
+        relevance=&quot;Output: .next build (and standalone Docker output when containerizing). Edge middleware/proxy runs at the CDN layer for auth redirects before the page.&quot;
+        tradeoffs=&quot;Immutable deploys simplify rollback. Mutating a server in place fights CDNs and caching assumptions.&quot;
+      /&gt;
+
+      &lt;Divider /&gt;
+      &lt;H3&gt;Web performance infrastructure&lt;/H3&gt;
+
+      &lt;Topic
+        title=&quot;Compression, HTTP/2/3, cache headers, CDN, SWR&quot;
+        definition=&quot;Transport and caching layers that cut latency independent of React code quality.&quot;
+        explanation=&quot;Gzip/Brotli shrink text assets. HTTP/2/3 multiplex requests (H3 over QUIC helps lossy networks). Cache-Control (max-age, s-maxage, stale-while-revalidate) tells browsers and CDNs what to reuse. A CDN terminates TLS near users and caches static/ISR output. stale-while-revalidate serves stale immediately while refreshing — same idea as Next ISR.&quot;
+        relevance=&quot;Next/Vercel sets much of this for static assets and ISR. You still choose Cache-Control on Route Handlers and external APIs. Align CDN TTL with revalidate. HTML for personalized SSR should be private/no-store at the edge.&quot;
+        tradeoffs=&quot;Aggressive public caching for static; short or private for personalized. SWR improves UX but can briefly show stale content — fine for blogs, careful for prices/inventory.&quot;
+      /&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function JavaScriptSection() {
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;Stack gap={6}&gt;
+        &lt;H2&gt;JavaScript (engine, perf, structures, types, auth)&lt;/H2&gt;
+        &lt;Text tone=&quot;secondary&quot;&gt;
+          Engine and data-structure topics are language/runtime knowledge. Auth
+          wiring cites Auth.js patterns from Context7 · /websites/authjs_dev.
+        &lt;/Text&gt;
+      &lt;/Stack&gt;
+
+      &lt;H3&gt;JS engine &amp; concurrency&lt;/H3&gt;
+
+      &lt;Topic
+        title=&quot;Call stack, event loop, microtasks &amp; macrotasks&quot;
+        defaultOpen
+        definition=&quot;JS runs on a single call stack. The event loop schedules work from task queues when the stack is empty. Microtasks (Promises, queueMicrotask) run before the next macrotask (setTimeout, I/O, MessageChannel).&quot;
+        explanation=&quot;Sync code runs to completion. then/catch/await continuations flush the microtask queue fully between macrotasks. Long sync work blocks rendering and input — break it up or move to Workers.&quot;
+        relevance=&quot;React 18+ concurrent features interleave work but still sit on the same JS thread. Heavy computation in render or effects janks hydration and interactions. Prefer async boundaries and transitions for non-urgent updates.&quot;
+        tradeoffs=&quot;Know ordering for interview puzzles (Promise vs setTimeout). In production, profile long tasks; do not micro-optimize queue order without a symptom.&quot;
+      /&gt;
+
+      &lt;H3&gt;Performance tooling&lt;/H3&gt;
+
+      &lt;Topic
+        title=&quot;Chrome Performance + heap snapshots / leaks&quot;
+        definition=&quot;Performance panel records CPU timeline (long tasks, scripting, rendering). Memory / heap snapshots compare retained objects to find leaks.&quot;
+        explanation=&quot;Look for long tasks &gt;50ms, layout thrash, excessive scripting after navigation. Heap: take snapshot, interact, snapshot again, compare — detached DOM nodes and growing closures indicate leaks. Allocation instrumentation finds churn.&quot;
+        relevance=&quot;Profile hydration and route transitions in Next. Watch for accidental retainers: uncleared intervals, global event listeners, module-level caches, React Query clients with wrong gcTime, Zustand stores holding large graphs.&quot;
+        tradeoffs=&quot;Fix user-visible jank first (LCP/INP). Heap work is for confirmed growth over time, not premature.&quot;
+      /&gt;
+
+      &lt;H3&gt;Advanced structures&lt;/H3&gt;
+
+      &lt;Grid columns={2} gap={12}&gt;
+        &lt;Card&gt;
+          &lt;CardHeader trailing={&lt;Pill tone=&quot;neutral&quot;&gt;Tree&lt;/Pill&gt;}&gt;
+            Trees
+          &lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Stack gap={6}&gt;
+              &lt;Text&gt;
+                Hierarchical nodes (DOM, React fiber conceptually, file systems,
+                UI menus). DFS/BFS traversal; balanced trees for ordered maps.
+              &lt;/Text&gt;
+              &lt;Text tone=&quot;secondary&quot;&gt;
+                When: nested comments, org charts, virtualized file browsers.
+                Prefer adjacency lists from APIs over deep recursive props without
+                memo boundaries.
+              &lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+        &lt;Card&gt;
+          &lt;CardHeader trailing={&lt;Pill tone=&quot;neutral&quot;&gt;Graph&lt;/Pill&gt;}&gt;
+            Graphs
+          &lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Stack gap={6}&gt;
+              &lt;Text&gt;
+                Nodes + edges (directed/undirected). Used for dependency graphs,
+                social links, routing, monorepo project graphs.
+              &lt;/Text&gt;
+              &lt;Text tone=&quot;secondary&quot;&gt;
+                When: permissions inheritance, recommendation edges, build
+                pipelines. Watch cycles; memoize expensive traversals.
+              &lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+        &lt;Card&gt;
+          &lt;CardHeader trailing={&lt;Pill tone=&quot;neutral&quot;&gt;List&lt;/Pill&gt;}&gt;
+            Linked lists
+          &lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Stack gap={6}&gt;
+              &lt;Text&gt;
+                Nodes with next (and prev) pointers. O(1) insert/delete given a
+                reference; O(n) random access.
+              &lt;/Text&gt;
+              &lt;Text tone=&quot;secondary&quot;&gt;
+                Rare in app UI vs arrays. Appears in interview algorithms, LRU
+                cache internals, some streaming buffers.
+              &lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+        &lt;Card&gt;
+          &lt;CardHeader trailing={&lt;Pill tone=&quot;neutral&quot;&gt;Queue&lt;/Pill&gt;}&gt;
+            Queues
+          &lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;Stack gap={6}&gt;
+              &lt;Text&gt;
+                FIFO structure. Underpins task queues, job processors, BFS,
+                rate-limit windows.
+              &lt;/Text&gt;
+              &lt;Text tone=&quot;secondary&quot;&gt;
+                Frontend: toast queues, upload queues, optimistic mutation
+                queues. Backend: SQS/Rabbit/Bull for Next background work.
+              &lt;/Text&gt;
+            &lt;/Stack&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+      &lt;/Grid&gt;
+
+      &lt;H3&gt;Special types&lt;/H3&gt;
+
+      &lt;Topic
+        title=&quot;Symbol, BigInt, Infinity&quot;
+        definition=&quot;Symbol: unique immutable identifier, often used as non-string object keys. BigInt: arbitrary-precision integers (suffix n). Infinity: numeric value from overflow or division by zero; typeof Infinity === &#x27;number&#x27;.&quot;
+        explanation=&quot;Symbols avoid key collisions (Symbol.iterator, Symbol.toStringTag). BigInt cannot mix with Number via + without conversion; JSON.stringify does not support BigInt by default. Infinity compares oddly — prefer Number.isFinite for validation.&quot;
+        relevance=&quot;Rare in React props (prefer strings/numbers). Symbols can tag meta on objects. BigInt for IDs beyond Number.MAX_SAFE_INTEGER when APIs require it — serialize carefully across RSC boundaries.&quot;
+        tradeoffs=&quot;Use Number for normal UI metrics. BigInt only when precision demands it. Symbols for library protocol keys, not general React state.&quot;
+      /&gt;
+
+      &lt;H3&gt;Auth layers with known providers&lt;/H3&gt;
+
+      &lt;Callout tone=&quot;warning&quot; title=&quot;Pattern first — not fake API trivia&quot;&gt;
+        Interviewers want OAuth/OIDC flow literacy and where tokens live in a
+        Next app. Do not memorize every provider SDK method; know the shared
+        shape and high-level differences.
+      &lt;/Callout&gt;
+
+      &lt;Topic
+        title=&quot;Auth layer pattern (OAuth / OIDC / sessions)&quot;
+        defaultOpen
+        definition=&quot;Users authenticate with an Identity Provider (IdP). Your app receives tokens (and optionally creates a session) then authorizes requests using that session or bearer token.&quot;
+        explanation=&quot;Authorization Code (+ PKCE for public clients) is the browser-safe OAuth flow. OIDC adds ID tokens (user identity). Sessions: store opaque session ID in httpOnly Secure cookie; server looks up session. JWT sessions: signed cookie/token without server store (tradeoffs on revoke/size).&quot;
+        relevance=&quot;Auth.js (NextAuth): auth.ts configures providers; app/api/auth/[...nextauth]/route.ts exports handlers GET/POST; auth() reads session in Server Components/Route Handlers; middleware/proxy can gate routes; cookies stay httpOnly. Env: client IDs/secrets server-side only.&quot;
+        tradeoffs=&quot;Cookie sessions for classic SSR apps. Bearer tokens for pure APIs/SPAs. Prefer server-side session validation for Next HTML routes.&quot;
+      /&gt;
+
+      &lt;Table
+        headers={[&quot;Provider family&quot;, &quot;Typical protocol&quot;, &quot;Notes for Next&quot;]}
+        rows={[
+          [
+            &quot;Facebook Login&quot;,
+            &quot;OAuth 2.0&quot;,
+            &quot;Social identity; Auth.js Facebook provider; app review for some scopes&quot;,
+          ],
+          [
+            &quot;Microsoft / Entra ID (Azure AD)&quot;,
+            &quot;OIDC / OAuth&quot;,
+            &quot;Work/school tenants; tenantId matters; Auth.js Azure AD provider&quot;,
+          ],
+          [
+            &quot;Google&quot;,
+            &quot;OIDC&quot;,
+            &quot;Common social + Workspace; refresh token needs offline access params&quot;,
+          ],
+          [
+            &quot;Firebase Auth&quot;,
+            &quot;Tokens + SDK&quot;,
+            &quot;Client SDK + ID tokens; verify tokens on server; different shape than Auth.js-first&quot;,
+          ],
+          [
+            &quot;Okta / Auth0-class&quot;,
+            &quot;OIDC enterprise&quot;,
+            &quot;SSO, MFA, org policies; standard OIDC app registration&quot;,
+          ],
+        ]}
+        striped
+      /&gt;
+
+      &lt;Stack gap={6}&gt;
+        &lt;Text weight=&quot;semibold&quot;&gt;Wiring checklist (Next App Router)&lt;/Text&gt;
+        &lt;Text&gt;
+          1. Register redirect URI to your Auth route handler callback URL.
+        &lt;/Text&gt;
+        &lt;Text&gt;
+          2. Keep client secret on server; expose only public client ID if
+          required.
+        &lt;/Text&gt;
+        &lt;Text&gt;
+          3. Establish session cookie after callback; never store access tokens
+          in localStorage for XSS-sensitive apps.
+        &lt;/Text&gt;
+        &lt;Text&gt;
+          4. Protect via middleware/proxy matcher + auth() in sensitive Server
+          Components / Route Handlers.
+        &lt;/Text&gt;
+        &lt;Text&gt;
+          5. Refresh tokens: rotate carefully (Auth.js docs show provider-specific
+          refresh patterns); handle RefreshTokenError in UI.
+        &lt;/Text&gt;
+        &lt;Text&gt;
+          6. Firebase-style: verify ID token with Admin SDK in Route Handlers;
+          do not trust client-only auth state for authorization.
+        &lt;/Text&gt;
+      &lt;/Stack&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function TestingSection() {
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;Stack gap={6}&gt;
+        &lt;H2&gt;Testing process literacy&lt;/H2&gt;
+        &lt;Text tone=&quot;secondary&quot;&gt;
+          Senior expectation: know the funnel from human exploration to
+          automated gates — and what each layer catches.
+        &lt;/Text&gt;
+      &lt;/Stack&gt;
+
+      &lt;Table
+        headers={[&quot;Layer&quot;, &quot;Definition&quot;, &quot;Primary question&quot;, &quot;Typical tools&quot;]}
+        rows={[
+          [
+            &quot;Manual&quot;,
+            &quot;Human explores builds against scenarios/checklists&quot;,
+            &quot;Does this feel right / edge cases?&quot;,
+            &quot;Checklists, exploratory charters&quot;,
+          ],
+          [
+            &quot;A/B&quot;,
+            &quot;Controlled experiment between variants on real traffic&quot;,
+            &quot;Which variant wins a metric?&quot;,
+            &quot;Flags, experiment platforms, stats&quot;,
+          ],
+          [
+            &quot;Smoke&quot;,
+            &quot;Shallow critical-path checks after deploy/build&quot;,
+            &quot;Is the build obviously broken?&quot;,
+            &quot;Hit /, login, checkout start&quot;,
+          ],
+          [
+            &quot;Automation&quot;,
+            &quot;Scripted repeatable tests in CI&quot;,
+            &quot;Did we regress known behavior?&quot;,
+            &quot;Jest/Vitest, Testing Library, Playwright/Cypress&quot;,
+          ],
+        ]}
+        striped
+      /&gt;
+
+      &lt;Topic
+        title=&quot;Manual testing&quot;
+        defaultOpen
+        definition=&quot;Structured or exploratory human validation of behavior, UX, and edge cases that scripts do not yet encode.&quot;
+        explanation=&quot;Use for new UX, accessibility spot checks, visual polish, and weird integrations. Write down charters so exploration is not random thrash. Feed bugs back into automation when they are stable regressions.&quot;
+        relevance=&quot;Click through App Router navigations, auth redirects, and form Server Actions. Verify loading/error.tsx boundaries manually before investing in e2e.&quot;
+        tradeoffs=&quot;Essential early and for UX. Too slow as the only gate for a large suite of known behaviors.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;A/B testing&quot;
+        definition=&quot;Split traffic between variants, measure a predefined metric, and ship the winner with statistical discipline.&quot;
+        explanation=&quot;Needs: hypothesis, primary metric, sample size/duration, guardrail metrics. Feature flags assign variants. Avoid peeking bias and underpowered tests.&quot;
+        relevance=&quot;Implement via edge middleware/flags or client SDKs. Keep variants compatible with SSR to avoid hydration mismatches (same server decision must match client). Holdbacks validate long-term effects.&quot;
+        tradeoffs=&quot;Use for product decisions under uncertainty. Do not A/B obvious accessibility or security fixes.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;Smoke testing&quot;
+        definition=&quot;A minimal set of checks proving the deployed system boots and critical journeys respond.&quot;
+        explanation=&quot;Run post-deploy: homepage 200, auth login page loads, API health, maybe one write path. Fast fail beats deep coverage here.&quot;
+        relevance=&quot;Curl your production URL after Vercel deploy; Playwright smoke project with 3–5 tests tagged @smoke. Gate promotions on smoke green.&quot;
+        tradeoffs=&quot;Catches &#x27;site down&#x27; and gross config errors. Will not catch subtle logic bugs — that is automation depth.&quot;
+      /&gt;
+
+      &lt;Topic
+        title=&quot;Automation strategy (pyramid / trophy)&quot;
+        definition=&quot;Most coverage in fast unit/integration tests; fewer expensive e2e tests for critical user paths; static checks (types/lint) as always-on gates.&quot;
+        explanation=&quot;Unit: pure functions, reducers, price calculators. Component/integration: Testing Library against realistic DOM. E2E: Playwright for login → checkout. Contract tests for APIs. Visual regression optional for design systems.&quot;
+        relevance=&quot;React Testing Library for components; Mock server data at boundaries. Prefer testing user behavior over implementation details. For Next: unit test utilities; e2e the real server for middleware/auth/cookies; avoid over-mocking the framework.&quot;
+        tradeoffs=&quot;Invert the pyramid (too many e2e) → slow flaky CI. Zero e2e → shipping integration holes. Balance by risk.&quot;
+      /&gt;
+
+      &lt;Card&gt;
+        &lt;CardHeader&gt;Practical implementation order&lt;/CardHeader&gt;
+        &lt;CardBody&gt;
+          &lt;Stack gap={6}&gt;
+            &lt;Text&gt;
+              1. Typecheck + lint on every PR.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              2. Unit/integration for pure logic and critical components.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              3. E2E for top revenue/auth paths only.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              4. Smoke on every production deploy.
+            &lt;/Text&gt;
+            &lt;Text&gt;
+              5. Manual exploratory for new surfaces; A/B when metric tradeoffs
+              are unclear.
+            &lt;/Text&gt;
+          &lt;/Stack&gt;
+        &lt;/CardBody&gt;
+      &lt;/Card&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+export default function ReactNextInterviewGuide() {
+  const theme = useHostTheme();
+  const [section, setSection] = useCanvasState&lt;SectionId&gt;(
+    &quot;section&quot;,
+    &quot;frameworks&quot;,
+  );
+
+  return (
+    &lt;Stack
+      gap={20}
+      style={{
+        padding: 24,
+        maxWidth: 960,
+      }}
+    &gt;
+      &lt;Stack gap={8}&gt;
+        &lt;Row gap={8} align=&quot;center&quot;&gt;
+          &lt;H1&gt;React &amp; Next.js — senior interview guide&lt;/H1&gt;
+          &lt;Spacer /&gt;
+          &lt;Pill tone=&quot;info&quot;&gt;Context7 grounded&lt;/Pill&gt;
+        &lt;/Row&gt;
+        &lt;Text tone=&quot;secondary&quot;&gt;
+          Definitions, explanations, framework relevance, and tradeoffs for
+          frameworks, state, SEO, infrastructure, JavaScript, and testing.
+          Framework/SEO/state/auth/monorepo notes cite official docs fetched via
+          Context7 (Next.js, React, Zustand, TanStack Query, Auth.js, Turborepo).
+        &lt;/Text&gt;
+      &lt;/Stack&gt;
+
+      &lt;Row gap={8} wrap&gt;
+        &lt;Button
+          variant={section === &quot;frameworks&quot; ? &quot;primary&quot; : &quot;secondary&quot;}
+          onClick={() =&gt; setSection(&quot;frameworks&quot;)}
+        &gt;
+          Frameworks
+        &lt;/Button&gt;
+        &lt;Button
+          variant={section === &quot;state&quot; ? &quot;primary&quot; : &quot;secondary&quot;}
+          onClick={() =&gt; setSection(&quot;state&quot;)}
+        &gt;
+          State
+        &lt;/Button&gt;
+        &lt;Button
+          variant={section === &quot;html&quot; ? &quot;primary&quot; : &quot;secondary&quot;}
+          onClick={() =&gt; setSection(&quot;html&quot;)}
+        &gt;
+          HTML / SEO
+        &lt;/Button&gt;
+        &lt;Button
+          variant={section === &quot;infra&quot; ? &quot;primary&quot; : &quot;secondary&quot;}
+          onClick={() =&gt; setSection(&quot;infra&quot;)}
+        &gt;
+          Infrastructure
+        &lt;/Button&gt;
+        &lt;Button
+          variant={section === &quot;javascript&quot; ? &quot;primary&quot; : &quot;secondary&quot;}
+          onClick={() =&gt; setSection(&quot;javascript&quot;)}
+        &gt;
+          JavaScript
+        &lt;/Button&gt;
+        &lt;Button
+          variant={section === &quot;testing&quot; ? &quot;primary&quot; : &quot;secondary&quot;}
+          onClick={() =&gt; setSection(&quot;testing&quot;)}
+        &gt;
+          Testing
+        &lt;/Button&gt;
+      &lt;/Row&gt;
+
+      &lt;Divider /&gt;
+
+      {section === &quot;frameworks&quot; ? &lt;FrameworksSection /&gt; : null}
+      {section === &quot;state&quot; ? &lt;StateSection /&gt; : null}
+      {section === &quot;html&quot; ? &lt;HtmlSeoSection /&gt; : null}
+      {section === &quot;infra&quot; ? &lt;InfraSection /&gt; : null}
+      {section === &quot;javascript&quot; ? &lt;JavaScriptSection /&gt; : null}
+      {section === &quot;testing&quot; ? &lt;TestingSection /&gt; : null}
+
+      &lt;Divider /&gt;
+      &lt;Text size=&quot;small&quot; tone=&quot;tertiary&quot;&gt;
+        Docs libraries used: /vercel/next.js · /reactjs/react.dev ·
+        /pmndrs/zustand · /tanstack/query · /websites/authjs_dev ·
+        /vercel/turborepo. Platform topics (event loop, HTTP caching, data
+        structures, testing pyramid, Nx/Lerna overview) are general web
+        knowledge alongside those citations.
+      &lt;/Text&gt;
+      &lt;Text
+        size=&quot;small&quot;
+        style={{ color: theme.text.quaternary }}
+      &gt;
+        Study artifact — not a substitute for reading primary docs before an
+        interview.
+      &lt;/Text&gt;
+    &lt;/Stack&gt;
+  );
+}
+</pre>
+      </details>
+    </section>
+  </div>
+</body>
+</html>

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frontend Developer ladder · canvas</title>
+  <style>
+    :root {
+      --bg: #0b0f14; --surface: #12181f; --border: #243041;
+      --text: #d7e0ea; --muted: #8b9aab; --accent: #5cdb95;
+      --code-bg: #0a0e13; --pink: #ff7b72;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif;
+      line-height: 1.55; padding: 1.5rem 1rem 3rem;
+    }
+    .wrap { max-width: 920px; margin: 0 auto; }
+    nav { font-size: .875rem; margin-bottom: 1.25rem; color: var(--muted); }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    header.card, section.outline, section.source {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem 1.35rem; margin-bottom: 1rem;
+    }
+    h1.page { font-size: 1.45rem; font-weight: 650; letter-spacing: -.02em; }
+    .path { margin-top: .4rem; font-size: .8rem; color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .badge {
+      display: inline-block; margin-top: .75rem; font-size: .7rem;
+      font-family: ui-monospace, Menlo, monospace; color: var(--accent);
+      border: 1px solid var(--border); border-radius: 999px; padding: .15rem .5rem;
+    }
+    .muted { color: var(--muted); font-size: .9rem; }
+    h2 { font-size: 1rem; margin-bottom: .75rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .04em; }
+    h1.extracted { font-size: 1.25rem; margin: .4rem 0 .6rem; }
+    h2.extracted { font-size: 1.05rem; margin: 1rem 0 .4rem; color: var(--text);
+      text-transform: none; letter-spacing: 0; }
+    h3.extracted { font-size: .95rem; margin: .75rem 0 .3rem; color: #c9d4e0; }
+    p.extracted { color: var(--muted); font-size: .9rem; margin: .35rem 0; }
+    pre {
+      background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 1rem; overflow: auto; max-height: 70vh; font-size: .78rem;
+      line-height: 1.45; color: #c9d1d9;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    details summary {
+      cursor: pointer; color: var(--accent); font-size: .9rem; margin-bottom: .75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a href="/archives/">← vault index</a>
+      · <a href="https://github.com/pterodactor3000/archives/blob/main/notes/empty-window-canvases/frontend-dev-ladder.canvas.tsx">GitHub source</a>
+    </nav>
+    <header class="card">
+      <h1 class="page">Frontend Developer ladder</h1>
+      <p class="path">notes/empty-window-canvases/frontend-dev-ladder.canvas.tsx</p>
+      <span class="badge">canvas stand-in · not Cursor runtime</span>
+      <p class="muted" style="margin-top:.85rem">
+        Static HTML stand-in for browsing on GitHub Pages. Open the
+        <code style="color:var(--pink)">.canvas.tsx</code> in Cursor for the full canvas runtime.
+      </p>
+    </header>
+    <section class="outline"><h2>Extracted structure</h2><h1 class='extracted'>Frontend Developer ladder</h1><h2 class='extracted'>Engineering skills</h2><h2 class='extracted'>Technical skills</h2><h2 class='extracted'>— side by side</h2><h3 class='extracted'>How to use this doc</h3><p class='extracted'>Jit Team Engineering Path — Frontend specialization. PDF grid was unreadable; this is a rebuilt browseable view. Higher levels usually imply everything below them.</p><p class='extracted'>1. Pick the level you are hiring/assessing for (or targeting yourself).</p><p class='extracted'>2. Soft skills apply at every level — they are the interview bar, not a seniority differentiator.</p><p class='extracted'>3. Engineering skills (mgmt / mentoring / problem solving) show how autonomy and leadership grow.</p><p class='extracted'>4. Technical sections are the FE checklist: CSS, frameworks, HTML, infra, JS, testing, TS.</p><p class='extracted'>5. After Senior: fork into Technology, People, or Architecture — this PDF stops at L4.</p></section>
+    <section class="source">
+      <details open>
+        <summary>Source (.canvas.tsx)</summary>
+        <pre>import {
+  Callout,
+  Card,
+  CardBody,
+  CardHeader,
+  Divider,
+  Grid,
+  H1,
+  H2,
+  H3,
+  Pill,
+  Row,
+  Stack,
+  Stat,
+  Table,
+  Text,
+  useCanvasState,
+} from &quot;cursor/canvas&quot;;
+
+type LevelId = &quot;L1&quot; | &quot;L2&quot; | &quot;L3&quot; | &quot;L4&quot;;
+type ViewMode = &quot;level&quot; | &quot;category&quot; | &quot;compare&quot;;
+
+const LEVELS: {
+  id: LevelId;
+  name: string;
+  title: string;
+  experience: string;
+  promotion: string;
+  gist: string;
+}[] = [
+  {
+    id: &quot;L1&quot;,
+    name: &quot;Intern&quot;,
+    title: &quot;L1 — Intern&quot;,
+    experience: &quot;0–2 yrs IT (may be none)&quot;,
+    promotion: &quot;Max 6 months → L2 or out-place. Typical promote: 3–6 months&quot;,
+    gist: &quot;Learn fast. Follow. Ship small tasks with guidance. Communicate clearly.&quot;,
+  },
+  {
+    id: &quot;L2&quot;,
+    name: &quot;Junior&quot;,
+    title: &quot;L2 — Junior&quot;,
+    experience: &quot;0–2 yrs IT&quot;,
+    promotion: &quot;1–2 years + Leader approval → L3&quot;,
+    gist: &quot;Own your day. Solve typical bugs alone. Peer-help interns. Solid fundamentals.&quot;,
+  },
+  {
+    id: &quot;L3&quot;,
+    name: &quot;Regular&quot;,
+    title: &quot;L3 — Regular&quot;,
+    experience: &quot;2–5 yrs IT&quot;,
+    promotion: &quot;4–5 years + Leader approval → L4&quot;,
+    gist: &quot;Own features/projects. Mentor juniors. Pick tools/strategies with tradeoffs in mind.&quot;,
+  },
+  {
+    id: &quot;L4&quot;,
+    name: &quot;Senior&quot;,
+    title: &quot;L4 — Senior&quot;,
+    experience: &quot;&gt; 5 yrs IT&quot;,
+    promotion: &quot;After L4: choose Technology, People, or Architecture path&quot;,
+    gist: &quot;Set direction. Optimize systems/process. Lead mentoring. Deep tooling &amp; tradeoff judgment.&quot;,
+  },
+];
+
+type SkillRow = {
+  category: string;
+  group: &quot;engineering&quot; | &quot;technical&quot;;
+  shared?: string[];
+  byLevel: Record&lt;LevelId, string[]&gt;;
+};
+
+const SKILLS: SkillRow[] = [
+  {
+    category: &quot;Soft skills&quot;,
+    group: &quot;engineering&quot;,
+    shared: [
+      &quot;Communicativeness — clear, understandable information&quot;,
+      &quot;High personal culture — punctuality, respect, atmosphere, appearance/setup&quot;,
+      &quot;Professionalism — ethics, sense of liability&quot;,
+      &quot;Willingness to grow — accept criticism, find improvement areas&quot;,
+      &quot;Building relationships — authenticity, transparency, active listening, trust&quot;,
+    ],
+    byLevel: { L1: [], L2: [], L3: [], L4: [] },
+  },
+  {
+    category: &quot;Management&quot;,
+    group: &quot;engineering&quot;,
+    byLevel: {
+      L1: [&quot;Basic prioritization — identify important tasks, plan own day&quot;],
+      L2: [&quot;Own work planning — plan and execute tasks efficiently&quot;],
+      L3: [
+        &quot;Project management — manage projects, coordinate team activities&quot;,
+        &quot;Task delegation — delegate effectively to teammates&quot;,
+      ],
+      L4: [
+        &quot;Strategic planning — long-term activities and team strategies&quot;,
+        &quot;Process optimization — analyze and improve how work gets done&quot;,
+      ],
+    },
+  },
+  {
+    category: &quot;Mentoring&quot;,
+    group: &quot;engineering&quot;,
+    byLevel: {
+      L1: [
+        &quot;Basic collaboration — work with seniors, explain own work clearly to peers&quot;,
+      ],
+      L2: [&quot;Peer mentoring — support interns, collaborate across the team&quot;],
+      L3: [
+        &quot;Active mentoring — mentor juniors/interns on technical skill growth&quot;,
+      ],
+      L4: [
+        &quot;Advanced mentoring — lead mentoring programs for the whole team / careers&quot;,
+      ],
+    },
+  },
+  {
+    category: &quot;Problem solving&quot;,
+    group: &quot;engineering&quot;,
+    byLevel: {
+      L1: [
+        &quot;Basic reasoning — simple conclusions from collected info&quot;,
+        &quot;Information gathering — collect basic data needed to solve a problem&quot;,
+        &quot;Adaptability — learn from mistakes, change approach&quot;,
+        &quot;Cause-and-effect — understand simple causal relationships&quot;,
+      ],
+      L2: [
+        &quot;Critical thinking — evaluate info, make logical decisions&quot;,
+        &quot;Independence — solve typical problems in your field alone&quot;,
+        &quot;Problem decomposition — break problems into smaller parts&quot;,
+      ],
+      L3: [
+        &quot;Complex problem solving — analyze and fix hard technical issues&quot;,
+        &quot;Technical writing — functional docs before/after implementation&quot;,
+        &quot;Methodologies plus — flowcharts, SWOT, 5 Whys, diagrams (nice to have)&quot;,
+      ],
+      L4: [
+        &quot;Creative approach — propose new solutions to common problems&quot;,
+        &quot;Advanced data analysis — detailed analysis and conclusions&quot;,
+      ],
+    },
+  },
+  {
+    category: &quot;CSS&quot;,
+    group: &quot;technical&quot;,
+    byLevel: {
+      L1: [
+        &quot;Fundamentals: selectors (element/class/ID), positioning, box model&quot;,
+        &quot;Fonts: @font-face, Google Fonts, variable fonts&quot;,
+      ],
+      L2: [
+        &quot;CSS Modules (locally scoped styles)&quot;,
+        &quot;Units: px, em, rem, %, vw/vh, vmin/vmax, ch…&quot;,
+        &quot;RWD: @media breakpoints&quot;,
+        &quot;box-sizing: border-box&quot;,
+        &quot;Cascading, specificity, inheritance in practice&quot;,
+        &quot;Animations: @keyframes, animation, transition, transform&quot;,
+        &quot;CSS variables (custom properties)&quot;,
+        &quot;BEM / SMACSS / OOCSS&quot;,
+        &quot;Browser compatibility + vendor prefixes&quot;,
+        &quot;Preprocessor basics: Sass/SCSS or LESS&quot;,
+        &quot;Flexbox + CSS Grid fundamentals&quot;,
+      ],
+      L3: [
+        &quot;Fluent CSS tooling choice: inline vs CSS-in-JS vs stylesheets vs utility (Tailwind)&quot;,
+      ],
+      L4: [
+        &quot;Expected cumulative mastery of L1–L3 CSS (doc cell thin; seniority = depth + judgment)&quot;,
+      ],
+    },
+  },
+  {
+    category: &quot;Frameworks&quot;,
+    group: &quot;technical&quot;,
+    byLevel: {
+      L1: [
+        &quot;One of: React / Vue / Angular / Svelte — install, state, props&quot;,
+        &quot;DOM manipulation; reactivity / render cycles basics&quot;,
+        &quot;Common patterns: components, hooks&quot;,
+      ],
+      L2: [
+        &quot;Common libraries: Redux, MobX, Vuex, Zustand, Recoil, Pinia, Svelte store…&quot;,
+        &quot;Setup tooling: ESLint, Prettier, tsc&quot;,
+        &quot;Basic SSR vs SPA difference (e.g. Next vs React SPA)&quot;,
+      ],
+      L3: [
+        &quot;Design patterns: Composition, Compound Components, HOF, HOC&quot;,
+        &quot;Choose SSR / SPA / SSG by perf, SEO, UX&quot;,
+        &quot;Integrate tests: Jest, RTL, Cypress, Mocha&quot;,
+        &quot;Architecture: FSD, Atomic Design, MVC, MVVM&quot;,
+        &quot;Advanced concepts: memory opts, advanced hooks (useReducer/useRef…), code splitting (lazy/Suspense)&quot;,
+      ],
+      L4: [
+        &quot;Deep tradeoffs: SSR hydration issues, SPA SEO, SSG data fetching&quot;,
+        &quot;Advanced SSG / SSR / SPA understanding&quot;,
+        &quot;Pick optimal libs/strategies with clear reasoning (esp. state management)&quot;,
+      ],
+    },
+  },
+  {
+    category: &quot;HTML&quot;,
+    group: &quot;technical&quot;,
+    byLevel: {
+      L1: [
+        &quot;Semantic structure: header, nav, article, section, footer&quot;,
+        &quot;Basic HTML5: structural, input, form elements&quot;,
+      ],
+      L2: [
+        &quot;Solid semantics for readability, a11y landmarks, SEO&quot;,
+        &quot;Forms: accessibility + validation (types, required, pattern)&quot;,
+      ],
+      L3: [
+        &quot;SEO basics: meta description/robots, image alt&quot;,
+        &quot;WAI-ARIA: aria-label/labelledby/describedby, roles, keyboard nav&quot;,
+        &quot;Core Web Vitals awareness (LCP, FID, CLS) + RUM&quot;,
+      ],
+      L4: [
+        &quot;SEO proficiency: Open Graph, sitemaps (incl. dynamic), robots.txt&quot;,
+      ],
+    },
+  },
+  {
+    category: &quot;Infrastructure&quot;,
+    group: &quot;technical&quot;,
+    byLevel: {
+      L1: [&quot;REST + HTTP/S: methods, status codes, headers&quot;],
+      L2: [
+        &quot;Dev mode vs production build&quot;,
+        &quot;Realtime: WebSockets / full-duplex client↔server&quot;,
+        &quot;Browser + IDE debugging (incl. Lighthouse)&quot;,
+        &quot;Basic proxy (e.g. CORS workarounds)&quot;,
+      ],
+      L3: [
+        &quot;DevOps basics: Docker, Kubernetes&quot;,
+        &quot;Cloud, static serving, CDNs&quot;,
+        &quot;Deploy &amp; maintain SPA and SSR apps&quot;,
+        &quot;Same-Origin Policy &amp; CORS handling&quot;,
+        &quot;Package security: npm audit&quot;,
+        &quot;Monitoring basics: Sentry, PostHog, Datadog&quot;,
+      ],
+      L4: [
+        &quot;Monorepos: workspaces, nx, turborepo, lerna&quot;,
+        &quot;Release strategies, env vars, distribution flow&quot;,
+        &quot;Perf: compression, HTTP/2/3, cache headers, CDN, stale-while-revalidate&quot;,
+      ],
+    },
+  },
+  {
+    category: &quot;JavaScript&quot;,
+    group: &quot;technical&quot;,
+    byLevel: {
+      L1: [
+        &quot;Objects &amp; arrays — create and when to use&quot;,
+        &quot;Primitives: string, number, boolean, null, undefined&quot;,
+        &quot;Variables, loops, statements, conditionals&quot;,
+        &quot;Base events: addEventListener&quot;,
+        &quot;DOM: querySelector, innerHTML/textContent, classList&quot;,
+      ],
+      L2: [
+        &quot;Structures: multidimensional arrays, Classes, Date, Set, Map&quot;,
+        &quot;Closures (lexical scope, factories)&quot;,
+        &quot;Hoisting: var vs let/const, function hoisting&quot;,
+        &quot;Async: promises, callbacks, try/catch&quot;,
+        &quot;ES6: spread/rest, destructuring, templates, import/export&quot;,
+        &quot;Storage: memory vs session/local storage vs cookies vs IndexedDB&quot;,
+        &quot;Prototypes, currying, class-oriented patterns&quot;,
+      ],
+      L3: [
+        &quot;Map / Set / WeakMap&quot;,
+        &quot;Advanced events: bubbling &amp; capturing&quot;,
+        &quot;Scopes of variables and functions&quot;,
+        &quot;Bundling / minify / tree-shake: Webpack, Rollup, Vite&quot;,
+        &quot;Shallow vs deep copy (+ techniques)&quot;,
+        &quot;Auth concepts: authn vs authz, token types, storage, session clear&quot;,
+        &quot;Security threats: clickjacking, XSS, CSRF, MITM, session hijacking&quot;,
+        &quot;PWA awareness: Service Workers, App Shell&quot;,
+        &quot;Memory leaks: timers, listeners, closures&quot;,
+      ],
+      L4: [
+        &quot;JS engine: call stack, event loop, micro/macro tasks&quot;,
+        &quot;Perf tooling: Chrome Performance + heap snapshots / leak hunting&quot;,
+        &quot;Advanced structures: trees, graphs, linked lists, queues&quot;,
+        &quot;Special types: Symbol, BigInt, Infinity&quot;,
+        &quot;Implement auth layers with known APIs (Facebook, Microsoft, Firebase, Okta…)&quot;,
+      ],
+    },
+  },
+  {
+    category: &quot;Testing&quot;,
+    group: &quot;technical&quot;,
+    byLevel: {
+      L1: [
+        &quot;Build simple tests with Jest / Mocha / Vitest&quot;,
+        &quot;Awareness of unit / integration / E2E&quot;,
+      ],
+      L2: [
+        &quot;Differences + pros/cons of unit, integration, E2E&quot;,
+        &quot;Simple E2E with Playwright or Cypress&quot;,
+      ],
+      L3: [
+        &quot;Error capture tools in the wild: Sentry, Datadog, PostHog&quot;,
+      ],
+      L4: [
+        &quot;Full testing process literacy: manual → A/B → smoke → automation; implement strategies&quot;,
+      ],
+    },
+  },
+  {
+    category: &quot;TypeScript&quot;,
+    group: &quot;technical&quot;,
+    byLevel: {
+      L1: [
+        &quot;Why TS: refactoring, IntelliSense, type checking&quot;,
+        &quot;Awareness of maintainability / scalability benefits&quot;,
+        &quot;Basic syntax awareness: types, interfaces, classes, enums, functions, generics, modules&quot;,
+      ],
+      L2: [
+        &quot;What .d.ts files are and when they help&quot;,
+        &quot;Declare basic types: string, number, boolean, object, array…&quot;,
+        &quot;typeof, type guards, object instances&quot;,
+        &quot;type vs interface&quot;,
+        &quot;Solid syntax: types, interfaces, classes, enums, functions, modules&quot;,
+        &quot;Edit tsconfig / compiler options&quot;,
+      ],
+      L3: [
+        &quot;Advanced tsconfig for build perf and target environments&quot;,
+      ],
+      L4: [
+        &quot;TS limitations + how structures transpile to JS (e.: enums → objects)&quot;,
+        &quot;Advanced features: unions, intersections, generics, conditional types&quot;,
+      ],
+    },
+  },
+];
+
+const COMPARE_CATEGORIES = SKILLS.filter((s) =&gt; !s.shared).map((s) =&gt; s.category);
+
+function LevelPills({
+  active,
+  onSelect,
+}: {
+  active: LevelId;
+  onSelect: (id: LevelId) =&gt; void;
+}) {
+  return (
+    &lt;Row gap={8} wrap&gt;
+      {LEVELS.map((l) =&gt; (
+        &lt;span key={l.id}&gt;
+          &lt;Pill active={active === l.id} onClick={() =&gt; onSelect(l.id)}&gt;
+            {l.title}
+          &lt;/Pill&gt;
+        &lt;/span&gt;
+      ))}
+    &lt;/Row&gt;
+  );
+}
+
+function BulletList({ items }: { items: string[] }) {
+  if (items.length === 0) return null;
+  return (
+    &lt;Stack gap={6}&gt;
+      {items.map((item) =&gt; (
+        &lt;span key={item}&gt;
+          &lt;Text size=&quot;small&quot;&gt;{`• ${item}`}&lt;/Text&gt;
+        &lt;/span&gt;
+      ))}
+    &lt;/Stack&gt;
+  );
+}
+
+function LevelView({ levelId }: { levelId: LevelId }) {
+  const level = LEVELS.find((l) =&gt; l.id === levelId)!;
+  const eng = SKILLS.filter((s) =&gt; s.group === &quot;engineering&quot;);
+  const tech = SKILLS.filter((s) =&gt; s.group === &quot;technical&quot;);
+
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;Grid columns={3} gap={12}&gt;
+        &lt;Stat value={level.name} label=&quot;Level&quot; /&gt;
+        &lt;Stat value={level.experience} label=&quot;IT experience&quot; /&gt;
+        &lt;Stat value={levelId === &quot;L4&quot; ? &quot;Path choice&quot; : &quot;Timed + approval&quot;} label=&quot;Exit path&quot; /&gt;
+      &lt;/Grid&gt;
+
+      &lt;Callout tone=&quot;info&quot; title=&quot;In one line&quot;&gt;
+        {level.gist}
+      &lt;/Callout&gt;
+
+      &lt;Text size=&quot;small&quot; tone=&quot;secondary&quot;&gt;
+        Promotion: {level.promotion}
+      &lt;/Text&gt;
+
+      &lt;H2&gt;Engineering skills&lt;/H2&gt;
+      &lt;Grid columns={2} gap={12}&gt;
+        {eng.map((skill) =&gt; (
+          &lt;span key={skill.category}&gt;
+            &lt;Card&gt;
+              &lt;CardHeader&gt;{skill.category}&lt;/CardHeader&gt;
+              &lt;CardBody&gt;
+                {skill.shared ? (
+                  &lt;BulletList items={skill.shared} /&gt;
+                ) : (
+                  &lt;BulletList items={skill.byLevel[levelId]} /&gt;
+                )}
+              &lt;/CardBody&gt;
+            &lt;/Card&gt;
+          &lt;/span&gt;
+        ))}
+      &lt;/Grid&gt;
+
+      &lt;H2&gt;Technical skills&lt;/H2&gt;
+      &lt;Stack gap={10}&gt;
+        {tech.map((skill) =&gt; (
+          &lt;span key={skill.category}&gt;
+            &lt;Card collapsible defaultOpen&gt;
+              &lt;CardHeader&gt;{skill.category}&lt;/CardHeader&gt;
+              &lt;CardBody&gt;
+                &lt;BulletList items={skill.byLevel[levelId]} /&gt;
+              &lt;/CardBody&gt;
+            &lt;/Card&gt;
+          &lt;/span&gt;
+        ))}
+      &lt;/Stack&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+function CategoryView({ category }: { category: string }) {
+  const skill = SKILLS.find((s) =&gt; s.category === category)!;
+
+  return (
+    &lt;Stack gap={16}&gt;
+      &lt;H2&gt;{skill.category}&lt;/H2&gt;
+      {skill.shared ? (
+        &lt;Card&gt;
+          &lt;CardHeader trailing={&lt;Pill size=&quot;sm&quot;&gt;All levels&lt;/Pill&gt;}&gt;
+            Shared bar
+          &lt;/CardHeader&gt;
+          &lt;CardBody&gt;
+            &lt;BulletList items={skill.shared} /&gt;
+          &lt;/CardBody&gt;
+        &lt;/Card&gt;
+      ) : (
+        &lt;Grid columns={2} gap={12}&gt;
+          {LEVELS.map((l) =&gt; (
+            &lt;span key={l.id}&gt;
+              &lt;Card&gt;
+                &lt;CardHeader&gt;{l.title}&lt;/CardHeader&gt;
+                &lt;CardBody&gt;
+                  &lt;BulletList items={skill.byLevel[l.id]} /&gt;
+                &lt;/CardBody&gt;
+              &lt;/Card&gt;
+            &lt;/span&gt;
+          ))}
+        &lt;/Grid&gt;
+      )}
+    &lt;/Stack&gt;
+  );
+}
+
+function CompareView({ category }: { category: string }) {
+  const skill = SKILLS.find((s) =&gt; s.category === category)!;
+  const rows = LEVELS.map((l) =&gt; [
+    l.title,
+    skill.byLevel[l.id].join(&quot; · &quot;) || &quot;—&quot;,
+  ]);
+
+  return (
+    &lt;Stack gap={12}&gt;
+      &lt;H2&gt;{skill.category} — side by side&lt;/H2&gt;
+      &lt;Table
+        headers={[&quot;Level&quot;, &quot;Expectations at this level&quot;]}
+        rows={rows}
+        striped
+        columnAlign={[&quot;left&quot;, &quot;left&quot;]}
+      /&gt;
+    &lt;/Stack&gt;
+  );
+}
+
+export default function FrontendDevLadder() {
+  const [mode, setMode] = useCanvasState&lt;ViewMode&gt;(&quot;mode&quot;, &quot;level&quot;);
+  const [level, setLevel] = useCanvasState&lt;LevelId&gt;(&quot;level&quot;, &quot;L2&quot;);
+  const [category, setCategory] = useCanvasState&lt;string&gt;(
+    &quot;category&quot;,
+    &quot;Frameworks&quot;
+  );
+
+  return (
+    &lt;Stack gap={20} style={{ padding: 20, maxWidth: 960 }}&gt;
+      &lt;Stack gap={6}&gt;
+        &lt;H1&gt;Frontend Developer ladder&lt;/H1&gt;
+        &lt;Text tone=&quot;secondary&quot;&gt;
+          Jit Team Engineering Path — Frontend specialization. PDF grid was
+          unreadable; this is a rebuilt browseable view. Higher levels usually
+          imply everything below them.
+        &lt;/Text&gt;
+      &lt;/Stack&gt;
+
+      &lt;Callout tone=&quot;warning&quot; title=&quot;Reconstruction note&quot;&gt;
+        Source PDF text extract scrambled column order. Soft skills,
+        mentoring, and experience bands are solid. Some technical cells
+        (esp. JS / Infra / CSS L4) were inferred from progression + reading
+        order — treat those as guidance, not verbatim HR wording.
+      &lt;/Callout&gt;
+
+      &lt;Row gap={8} wrap&gt;
+        &lt;Pill active={mode === &quot;level&quot;} onClick={() =&gt; setMode(&quot;level&quot;)}&gt;
+          By level
+        &lt;/Pill&gt;
+        &lt;Pill active={mode === &quot;category&quot;} onClick={() =&gt; setMode(&quot;category&quot;)}&gt;
+          By skill
+        &lt;/Pill&gt;
+        &lt;Pill active={mode === &quot;compare&quot;} onClick={() =&gt; setMode(&quot;compare&quot;)}&gt;
+          Compare levels
+        &lt;/Pill&gt;
+      &lt;/Row&gt;
+
+      &lt;Divider /&gt;
+
+      {mode === &quot;level&quot; &amp;&amp; (
+        &lt;Stack gap={14}&gt;
+          &lt;LevelPills active={level} onSelect={setLevel} /&gt;
+          &lt;LevelView levelId={level} /&gt;
+        &lt;/Stack&gt;
+      )}
+
+      {mode === &quot;category&quot; &amp;&amp; (
+        &lt;Stack gap={14}&gt;
+          &lt;Row gap={8} wrap&gt;
+            {SKILLS.map((s) =&gt; (
+              &lt;span key={s.category}&gt;
+                &lt;Pill
+                  active={category === s.category}
+                  onClick={() =&gt; setCategory(s.category)}
+                &gt;
+                  {s.category}
+                &lt;/Pill&gt;
+              &lt;/span&gt;
+            ))}
+          &lt;/Row&gt;
+          &lt;CategoryView category={category} /&gt;
+        &lt;/Stack&gt;
+      )}
+
+      {mode === &quot;compare&quot; &amp;&amp; (
+        &lt;Stack gap={14}&gt;
+          &lt;Row gap={8} wrap&gt;
+            {COMPARE_CATEGORIES.map((c) =&gt; (
+              &lt;span key={c}&gt;
+                &lt;Pill active={category === c} onClick={() =&gt; setCategory(c)}&gt;
+                  {c}
+                &lt;/Pill&gt;
+              &lt;/span&gt;
+            ))}
+          &lt;/Row&gt;
+          &lt;CompareView
+            category={
+              COMPARE_CATEGORIES.includes(category)
+                ? category
+                : COMPARE_CATEGORIES[0]
+            }
+          /&gt;
+        &lt;/Stack&gt;
+      )}
+
+      &lt;Divider /&gt;
+
+      &lt;Stack gap={8}&gt;
+        &lt;H3&gt;How to use this doc&lt;/H3&gt;
+        &lt;Text size=&quot;small&quot;&gt;
+          1. Pick the level you are hiring/assessing for (or targeting yourself).
+        &lt;/Text&gt;
+        &lt;Text size=&quot;small&quot;&gt;
+          2. Soft skills apply at every level — they are the interview bar,
+          not a seniority differentiator.
+        &lt;/Text&gt;
+        &lt;Text size=&quot;small&quot;&gt;
+          3. Engineering skills (mgmt / mentoring / problem solving) show how
+          autonomy and leadership grow.
+        &lt;/Text&gt;
+        &lt;Text size=&quot;small&quot;&gt;
+          4. Technical sections are the FE checklist: CSS, frameworks, HTML,
+          infra, JS, testing, TS.
+        &lt;/Text&gt;
+        &lt;Text size=&quot;small&quot;&gt;
+          5. After Senior: fork into Technology, People, or Architecture —
+          this PDF stops at L4.
+        &lt;/Text&gt;
+      &lt;/Stack&gt;
+    &lt;/Stack&gt;
+  );
+}
+</pre>
+      </details>
+    </section>
+  </div>
+</body>
+</html>

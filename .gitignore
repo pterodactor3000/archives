@@ -8,3 +8,9 @@ venv/
 .DS_Store
 ingest/*
 !ingest/.gitkeep
+
+# App install/build junk (owned copies); published assets live under docs/apps/
+**/node_modules/
+**/.next/
+**/out/
+**/dist/

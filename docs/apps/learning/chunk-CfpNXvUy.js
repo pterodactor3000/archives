@@ -1,0 +1,1 @@
+import"./chunk-IlcHbRh2.js";import{r as t,t as i}from"./main-6JN4JIIM.js";var m=[{path:`:accountId`,providers:[i,{provide:t,useExisting:i}],loadComponent:()=>import(`./chunk-Di_JEuZO.js`).then(r=>r.OrderTicketExercise)}];export{m as orderTicketRoutes};

@@ -1,0 +1,1 @@
+var e=[{path:``,loadComponent:()=>import(`./chunk-B4jAoRv1.js`).then(t=>t.LazyFeatureStarter)}];export{e as lazyFeatureRoutes};
