@@ -17,7 +17,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
       </a>
       <SiteHeader />
       <div className="mx-auto flex w-full max-w-6xl flex-1">
-        <aside className="sticky top-0 hidden h-svh w-64 shrink-0 flex-col border-r lg:flex">
+        <aside className="sticky top-0 hidden h-svh w-64 shrink-0 flex-col border-r border-dashed border-[#b5e853]/40 lg:flex">
           <div className="flex h-14 items-center px-4">
             <Link href="/" className="font-heading text-sm font-medium">
               Stack notes

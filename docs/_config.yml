@@ -6,3 +6,10 @@ plugins:
 show_downloads: false
 # Project site URL path when published as username.github.io/archives
 baseurl: "/archives"
+# Next.js static exports put assets under apps/**/_next/. Jekyll ignores
+# underscore-prefixed dirs by default (so CSS/JS 404 on Pages). include by
+# basename covers nested paths like docs/apps/stack-notes/_next/ and
+# docs/apps/remote-learning/react-next/_next/ — do not use .nojekyll (that
+# would skip the hacker theme build entirely).
+include:
+  - _next

@@ -94,6 +94,8 @@ The vault front page lives under `docs/` as a **Jekyll** site using GitHub’s *
 
 **Note:** private-repo GitHub Pages often needs GitHub Pro (or a public repo).
 
+**Jekyll + Next `_next` assets:** GitHub Pages runs Jekyll on `docs/`, which **ignores** directories starting with `_` (including nested `apps/**/_next/`). Without an explicit include, Next CSS/JS 404 on the live site even though the files are committed. `docs/_config.yml` sets `include: [_next]` so those asset trees publish while keeping the hacker theme (do **not** add `.nojekyll` — that disables Jekyll/theme processing).
+
 ### Live apps layout (`docs/apps/`)
 
 ```
