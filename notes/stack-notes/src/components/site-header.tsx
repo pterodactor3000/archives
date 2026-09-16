@@ -19,7 +19,7 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b bg-background px-4 lg:hidden">
+    <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-dashed border-[#b5e853]/40 bg-background px-4 lg:hidden">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger
           render={<Button variant="outline" size="icon-sm" />}
